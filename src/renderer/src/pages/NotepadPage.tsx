@@ -5,55 +5,86 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Save, FileDown } from "lucide-react"
 
-export default function NotepadPage() {
-  const [content, setContent] = useState("")
+interface NoteContent {
+  [key: string]: string
+}
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+export default function NotepadPage() {
+  const [activeTab, setActiveTab] = useState("note-1")
+  const [noteContents, setNoteContents] = useState<NoteContent>({
+    "note-1": "",
+    "note-2": "",
+    "note-3": "",
+    "note-4": "",
+    "note-5": "",
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>, noteId: string) => {
     const newContent = e.target.value
-    setContent(newContent)
+    setNoteContents((prev) => ({
+      ...prev,
+      [noteId]: newContent,
+    }))
     // electron-store auto-save would happen here
-    console.log("[v0] Auto-saving to electron-store")
+    console.log(`[v0] Auto-saving ${noteId} to electron-store`)
   }
 
   const handleSave = () => {
-    console.log("[v0] Saving note:", content)
+    console.log("[v0] Saving note:", activeTab, noteContents[activeTab])
     // Electron file save would go here
   }
 
   const handleExport = () => {
-    console.log("[v0] Exporting note")
+    console.log("[v0] Exporting note:", activeTab)
     // Electron file export would go here
   }
 
+  const currentContent = noteContents[activeTab]
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
         <h2 className="text-2xl font-bold text-foreground">메모장</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <FileDown className="w-4 h-4 mr-2" />
             내보내기
           </Button>
-          <Button onClick={handleSave}>
+          <Button size="sm" onClick={handleSave}>
             <Save className="w-4 h-4 mr-2" />
             저장
           </Button>
         </div>
       </div>
 
-      <Card className="p-0 overflow-hidden">
-        <textarea
-          value={content}
-          onChange={handleChange}
-          placeholder="여기에 메모를 작성하세요..."
-          className="w-full h-[calc(100vh-250px)] p-6 bg-background text-foreground resize-none focus:outline-none border-none"
-        />
-      </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="grid w-full grid-cols-5 mb-4 flex-shrink-0">
+          <TabsTrigger value="note-1">메모 1</TabsTrigger>
+          <TabsTrigger value="note-2">메모 2</TabsTrigger>
+          <TabsTrigger value="note-3">메모 3</TabsTrigger>
+          <TabsTrigger value="note-4">메모 4</TabsTrigger>
+          <TabsTrigger value="note-5">메모 5</TabsTrigger>
+        </TabsList>
 
-      <p className="text-sm text-muted-foreground mt-4">
-        {content.length} 글자 | {content.split("\n").length} 줄 | electron-store를 통해 자동으로 저장됩니다
+        {["note-1", "note-2", "note-3", "note-4", "note-5"].map((noteId) => (
+          <TabsContent key={noteId} value={noteId} className="flex-1 flex flex-col min-h-0 mt-0">
+            <Card className="p-0 overflow-hidden flex-1 flex flex-col">
+              <textarea
+                value={noteContents[noteId]}
+                onChange={(e) => handleChange(e, noteId)}
+                placeholder="여기에 메모를 작성하세요..."
+                className="w-full flex-1 p-6 bg-background text-foreground resize-none focus:outline-none border-none"
+              />
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      <p className="text-sm text-muted-foreground mt-4 flex-shrink-0">
+        {currentContent.length} 글자 | {currentContent.split("\n").length} 줄 | electron-store를 통해 자동으로 저장됩니다
       </p>
     </div>
   )

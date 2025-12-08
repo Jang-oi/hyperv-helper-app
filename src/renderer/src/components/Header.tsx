@@ -57,13 +57,8 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
 
   return (
     <header className="bg-white border-b border-border flex-shrink-0 drag-region">
-      <div className="px-8 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex-shrink-0 no-drag">
-          <h1 className="text-xl font-bold text-foreground">Hyper-V Helper</h1>
-        </div>
-
-        {/* Center Navigation */}
+      <div className="px-8 h-16 flex items-center">
+        {/* Navigation */}
         <nav className="flex items-center gap-1 no-drag">
           {menuItems.map((item) => (
             <div key={item.id} className="relative">
@@ -112,9 +107,6 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
             </div>
           ))}
         </nav>
-
-        {/* Right spacer for balance */}
-        <div className="flex-shrink-0 w-40" />
       </div>
     </header>
   )

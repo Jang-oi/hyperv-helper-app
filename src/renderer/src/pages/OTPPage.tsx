@@ -109,7 +109,7 @@ export default function OTPPage() {
                   <p className="text-3xl font-bold text-primary tracking-wider">{account.code}</p>
                   <Button variant="ghost" size="sm" onClick={() => copyToClipboard(account.code, account.id)}>
                     {copiedId === account.id ? (
-                      <Check className="w-5 h-5 text-green-600" />
+                      <Check className="w-5 h-5 text-primary" />
                     ) : (
                       <Copy className="w-5 h-5" />
                     )}
