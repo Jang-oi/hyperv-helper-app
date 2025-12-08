@@ -56,11 +56,11 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50 drag-region">
-      <div className="mx-auto px-6 h-16 flex items-center justify-between">
+    <header className="bg-white border-b border-border flex-shrink-0 drag-region">
+      <div className="px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex-shrink-0 no-drag">
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">Hyper-V Help</h1>
+          <h1 className="text-xl font-bold text-foreground">Hyper-V Helper</h1>
         </div>
 
         {/* Center Navigation */}
@@ -69,16 +69,16 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
             <div key={item.id} className="relative">
               <button
                 onClick={() => handleMenuClick(item)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-1 ${
+                className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
                   activePage === item.id || (item.children && item.children.some((child) => child.id === activePage))
                     ? "text-primary bg-secondary"
-                    : "text-foreground hover:text-primary hover:bg-secondary/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 }`}
               >
                 {item.label}
                 {item.children && (
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`}
+                    className={`w-3.5 h-3.5 transition-transform ${openDropdown === item.id ? "rotate-180" : ""}`}
                   />
                 )}
               </button>
@@ -87,10 +87,10 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
               <AnimatePresence>
                 {item.children && openDropdown === item.id && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15 }}
                     className="absolute top-full left-0 mt-1 w-48 bg-white border border-border rounded-lg shadow-lg overflow-hidden"
                   >
                     {item.children.map((child) => (
@@ -114,7 +114,7 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
         </nav>
 
         {/* Right spacer for balance */}
-        <div className="flex-shrink-0 w-32" />
+        <div className="flex-shrink-0 w-40" />
       </div>
     </header>
   )

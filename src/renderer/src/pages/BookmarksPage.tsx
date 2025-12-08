@@ -36,15 +36,15 @@ export default function BookmarksPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">북마크 설정</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">북마크 설정</h2>
 
       {/* Add New Bookmark */}
       <Card className="p-6 mb-6">
-        <h3 className="text-lg font-medium text-foreground mb-4">새 북마크 추가</h3>
+        <h3 className="text-base font-semibold text-foreground mb-5">새 북마크 추가</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">제목</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">제목</label>
             <Input
               type="text"
               placeholder="북마크 제목"
@@ -52,8 +52,8 @@ export default function BookmarksPage() {
               onChange={(e) => setNewBookmark({ ...newBookmark, title: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">URL</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">URL</label>
             <Input
               type="text"
               placeholder="https://example.com"
@@ -62,22 +62,22 @@ export default function BookmarksPage() {
             />
           </div>
         </div>
-        <Button onClick={addBookmark} className="mt-4 w-full">
+        <Button onClick={addBookmark} className="mt-5 w-full">
           <Plus className="w-4 h-4 mr-2" />
           북마크 추가
         </Button>
       </Card>
 
       {/* Bookmark List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {bookmarks.map((bookmark) => (
           <Card key={bookmark.id} className="p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-foreground mb-1">{bookmark.title}</h4>
+                <h4 className="font-semibold text-foreground mb-1">{bookmark.title}</h4>
                 <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
               </div>
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-1 ml-4">
                 <Button variant="ghost" size="sm" onClick={() => openBookmark(bookmark.url)}>
                   <ExternalLink className="w-4 h-4" />
                 </Button>

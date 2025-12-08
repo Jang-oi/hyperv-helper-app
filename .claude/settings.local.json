@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "mcp__serena__list_dir",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Hyper-V Helper Desktop App\n\n- Electron + React + TypeScript setup with Vite\n- Fixed window size: 800x960 (non-resizable)\n- Tailwind CSS v4 with shadcn/ui integration\n- Pretendard font for Korean text support\n- Basic page routing with Framer Motion animations\n- Initial pages: IP Change, Hostname Change, PortProxy, Bookmarks, OTP, Notepad, Version\n- Windows-only desktop application configuration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

@@ -34,20 +34,22 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       <Header activePage={activePage} onPageChange={setActivePage} />
-      <main className="w-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activePage}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderPage()}
-          </motion.div>
-        </AnimatePresence>
+      <main className="flex-1 overflow-y-auto">
+        <div className="px-8 py-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activePage}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderPage()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   )

@@ -33,8 +33,8 @@ export default function VersionPage() {
   const isLatest = true
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">버전 정보</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">버전 정보</h2>
 
       {/* Current Version */}
       <Card className="p-6 mb-6">
@@ -61,19 +61,19 @@ export default function VersionPage() {
 
       {/* Update History */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-foreground">업데이트 내역</h3>
+        <h3 className="text-lg font-semibold text-foreground">업데이트 내역</h3>
         {updateHistory.map((update) => (
-          <Card key={update.version} className="p-6">
+          <Card key={update.version} className="p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="text-lg font-semibold text-foreground">버전 {update.version}</h4>
+                <h4 className="text-base font-semibold text-foreground">버전 {update.version}</h4>
                 <p className="text-sm text-muted-foreground">{update.date}</p>
               </div>
             </div>
             <ul className="space-y-2">
               {update.changes.map((change, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm text-foreground">
-                  <span className="text-primary mt-1">•</span>
+                  <span className="text-primary mt-0.5">•</span>
                   <span>{change}</span>
                 </li>
               ))}

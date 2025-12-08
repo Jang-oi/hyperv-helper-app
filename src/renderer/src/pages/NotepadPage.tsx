@@ -28,9 +28,9 @@ export default function NotepadPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">메모장</h2>
+        <h2 className="text-2xl font-bold text-foreground">메모장</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport}>
             <FileDown className="w-4 h-4 mr-2" />

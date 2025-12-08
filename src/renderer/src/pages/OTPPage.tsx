@@ -81,13 +81,13 @@ export default function OTPPage() {
   const progress = (timeLeft / 30) * 100
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">OTP 관리</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">OTP 관리</h2>
 
       <Card className="p-6 mb-6">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">다음 갱신까지</span>
+            <span className="text-sm font-medium text-muted-foreground">다음 갱신까지</span>
             <span className="text-2xl font-bold text-primary">{timeLeft}초</span>
           </div>
           <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
@@ -101,10 +101,10 @@ export default function OTPPage() {
 
       <div className="space-y-4 mb-6">
         {accounts.map((account) => (
-          <Card key={account.id} className="p-6">
+          <Card key={account.id} className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground mb-2">{account.alias}</p>
+                <p className="text-sm font-semibold text-muted-foreground mb-2">{account.alias}</p>
                 <div className="flex items-center gap-3">
                   <p className="text-3xl font-bold text-primary tracking-wider">{account.code}</p>
                   <Button variant="ghost" size="sm" onClick={() => copyToClipboard(account.code, account.id)}>
@@ -118,7 +118,7 @@ export default function OTPPage() {
                 <p className="text-xs text-muted-foreground mt-2 font-mono">{account.key}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => handleDeleteAccount(account.id)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
+                <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
             </div>
           </Card>
@@ -126,10 +126,10 @@ export default function OTPPage() {
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-medium text-foreground mb-4">새 OTP 계정 추가</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">계정명 (Alias)</label>
+        <h3 className="text-base font-semibold text-foreground mb-5">새 OTP 계정 추가</h3>
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">계정명 (Alias)</label>
             <Input
               type="text"
               placeholder="예: Google 계정 3"
@@ -137,8 +137,8 @@ export default function OTPPage() {
               onChange={(e) => setNewAlias(e.target.value)}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">OTP 키</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">OTP 키</label>
             <Input
               type="text"
               placeholder="예: JBSWY3DPEHPK3PXP"

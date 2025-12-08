@@ -17,12 +17,12 @@ export default function IPChangePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">IP 주소 변경</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">IP 주소 변경</h2>
       <Card className="p-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">IP 주소</label>
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">IP 주소</label>
             <Input
               type="text"
               placeholder="예: 192.168.1.100"
@@ -30,8 +30,8 @@ export default function IPChangePage() {
               onChange={(e) => setIpAddress(e.target.value)}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">서브넷 마스크</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">서브넷 마스크</label>
             <Input
               type="text"
               placeholder="예: 255.255.255.0"
@@ -39,8 +39,8 @@ export default function IPChangePage() {
               onChange={(e) => setSubnetMask(e.target.value)}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">게이트웨이</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">게이트웨이</label>
             <Input
               type="text"
               placeholder="예: 192.168.1.1"
@@ -48,11 +48,11 @@ export default function IPChangePage() {
               onChange={(e) => setGateway(e.target.value)}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">DNS 서버</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">DNS 서버</label>
             <Input type="text" placeholder="예: 8.8.8.8" value={dns} onChange={(e) => setDns(e.target.value)} />
           </div>
-          <Button onClick={handleSubmit} className="w-full">
+          <Button onClick={handleSubmit} className="w-full mt-2">
             IP 설정 적용
           </Button>
         </div>

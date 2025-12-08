@@ -46,15 +46,15 @@ export default function PortProxyPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">PortProxy 설정</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">PortProxy 설정</h2>
 
       {/* Add New Rule */}
       <Card className="p-6 mb-6">
-        <h3 className="text-lg font-medium text-foreground mb-4">새 규칙 추가</h3>
+        <h3 className="text-base font-semibold text-foreground mb-5">새 규칙 추가</h3>
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">수신 포트</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">수신 포트</label>
             <Input
               type="text"
               placeholder="8080"
@@ -62,8 +62,8 @@ export default function PortProxyPage() {
               onChange={(e) => setNewRule({ ...newRule, listenPort: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">연결 주소</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">연결 주소</label>
             <Input
               type="text"
               placeholder="192.168.1.100"
@@ -71,8 +71,8 @@ export default function PortProxyPage() {
               onChange={(e) => setNewRule({ ...newRule, connectAddress: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">연결 포트</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">연결 포트</label>
             <Input
               type="text"
               placeholder="80"
@@ -81,7 +81,7 @@ export default function PortProxyPage() {
             />
           </div>
         </div>
-        <Button onClick={addRule} className="mt-4 w-full">
+        <Button onClick={addRule} className="mt-5 w-full">
           <Plus className="w-4 h-4 mr-2" />
           규칙 추가
         </Button>
@@ -89,19 +89,19 @@ export default function PortProxyPage() {
 
       {/* Existing Rules */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-foreground">현재 규칙</h3>
+        <h3 className="text-base font-semibold text-foreground">현재 규칙</h3>
         {rules.map((rule) => (
-          <Card key={rule.id} className="p-4">
+          <Card key={rule.id} className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div>
-                  <p className="text-xs text-muted-foreground">수신 포트</p>
-                  <p className="text-sm font-medium text-foreground">{rule.listenPort}</p>
+                  <p className="text-xs text-muted-foreground mb-1">수신 포트</p>
+                  <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
                 </div>
-                <span className="text-muted-foreground">→</span>
+                <span className="text-muted-foreground text-lg">→</span>
                 <div>
-                  <p className="text-xs text-muted-foreground">연결 대상</p>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-xs text-muted-foreground mb-1">연결 대상</p>
+                  <p className="text-sm font-semibold text-foreground">
                     {rule.connectAddress}:{rule.connectPort}
                   </p>
                 </div>

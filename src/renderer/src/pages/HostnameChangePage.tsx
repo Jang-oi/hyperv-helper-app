@@ -16,16 +16,16 @@ export default function HostnameChangePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h2 className="text-2xl font-semibold text-foreground mb-6">호스트네임 변경</h2>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">호스트네임 변경</h2>
       <Card className="p-6">
         <div className="mb-6 p-4 bg-muted rounded-lg">
           <p className="text-sm text-muted-foreground mb-1">현재 호스트네임</p>
-          <p className="text-lg font-medium text-foreground">{currentHostname}</p>
+          <p className="text-lg font-semibold text-foreground">{currentHostname}</p>
         </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">새 호스트네임</label>
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">새 호스트네임</label>
             <Input
               type="text"
               placeholder="새로운 컴퓨터 이름 입력"
