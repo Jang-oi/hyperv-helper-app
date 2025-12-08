@@ -57,11 +57,11 @@ export default function VersionPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div>
       <h2 className="text-2xl font-bold text-foreground mb-6">버전 정보</h2>
 
       {/* Current Version */}
-      <Card className="p-6 mb-6 flex-shrink-0">
+      <Card className="p-6 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground mb-1">현재 버전</p>
@@ -90,10 +90,10 @@ export default function VersionPage() {
       </Card>
 
       {/* Update History with ScrollArea */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex-shrink-0">업데이트 내역</h3>
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4 pb-4">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground mb-4">업데이트 내역</h3>
+        <ScrollArea className="h-[500px] pr-4">
+          <div className="space-y-4">
             {updateHistory.map((update) => (
               <Card key={update.version} className="p-5">
                 <div className="flex items-start justify-between mb-3">
