@@ -96,58 +96,48 @@ export default function OTPPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const progress = (timeLeft / 30) * 100
-
   return (
     <div>
-      <h2 className="text-2xl font-bold text-foreground mb-6">OTP 관리</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-5">OTP 관리</h2>
 
-      <Card className="p-4 mb-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">다음 갱신까지</span>
-          <span className="text-xl font-bold text-primary">{timeLeft}초</span>
-        </div>
-        <div className="w-full bg-secondary rounded-full h-2 overflow-hidden mt-3">
-          <div
-            className="bg-primary h-full transition-all duration-1000 ease-linear"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </Card>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/30 rounded-lg mb-4">
+        <span className="text-xs font-medium text-muted-foreground">다음 갱신</span>
+        <span className="text-lg font-bold text-primary">{timeLeft}초</span>
+      </div>
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[420px]">
+          <ScrollArea className="h-[480px]">
             <div className="space-y-3 pr-4">
               {accounts.map((account) => (
-                <Card key={account.id} className="p-4">
+                <Card key={account.id} className="p-3.5">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1.5">{account.alias}</p>
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">{account.alias}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-2xl font-bold text-primary tracking-wider">{account.code}</p>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0"
                           onClick={() => copyToClipboard(account.code, account.id)}
                         >
                           {copiedId === account.id ? (
-                            <Check className="w-4 h-4 text-primary" />
+                            <Check className="w-3.5 h-3.5 text-primary" />
                           ) : (
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-3.5 h-3.5" />
                           )}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1.5 font-mono">{account.key}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 font-mono">{account.key}</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0"
                       onClick={() => handleDeleteAccount(account.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-destructive" />
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     </Button>
                   </div>
                 </Card>
@@ -165,31 +155,31 @@ export default function OTPPage() {
         )}
       </div>
 
-      <Card className="p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">새 OTP 계정 추가</h3>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">계정명</label>
+      <Card className="p-3.5">
+        <h3 className="text-xs font-semibold text-foreground mb-2.5">새 OTP 계정 추가</h3>
+        <div className="space-y-2.5">
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium text-foreground">계정명</label>
             <Input
               type="text"
               placeholder="예: Google 계정 3"
-              className="h-9"
+              className="h-8 text-sm"
               value={newAlias}
               onChange={(e) => setNewAlias(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">OTP 키</label>
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium text-foreground">OTP 키</label>
             <Input
               type="text"
               placeholder="예: JBSWY3DPEHPK3PXP"
-              className="h-9"
+              className="h-8 text-sm"
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
             />
           </div>
-          <Button size="sm" onClick={handleAddAccount} className="w-full" disabled={!newAlias || !newKey}>
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
+          <Button size="sm" onClick={handleAddAccount} className="w-full h-8" disabled={!newAlias || !newKey}>
+            <Plus className="w-3 h-3 mr-1.5" />
             계정 추가
           </Button>
         </div>
