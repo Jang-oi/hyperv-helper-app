@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Progress } from "@/components/ui/progress"
 import { Copy, Check, Plus, Trash2, ChevronDown } from "lucide-react"
 
 interface OTPAccount {
@@ -101,23 +102,17 @@ export default function OTPPage() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-foreground mb-5">OTP 관리</h2>
-
       <Card className="p-4 mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-muted-foreground">다음 갱신</span>
           <span className="text-xl font-bold text-primary">{timeLeft}초</span>
         </div>
-        <div className="w-full bg-secondary rounded-full h-2">
-          <div
-            className="bg-primary h-2 rounded-full transition-all duration-1000"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <Progress value={progress} className="h-2" />
       </Card>
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[380px]">
+          <ScrollArea className="h-[360px]">
             <div className="space-y-3 pr-4">
               {accounts.map((account) => (
                 <Card key={account.id} className="p-3.5">
