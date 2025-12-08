@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, ChevronDown } from "lucide-react"
 
 interface ProxyRule {
   id: string
@@ -28,6 +28,24 @@ export default function PortProxyPage() {
     connectAddress: "",
     connectPort: "",
   })
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // 스크롤 가능 여부 체크
+    const checkScroll = () => {
+      const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+      if (scrollElement) {
+        const hasScroll = scrollElement.scrollHeight > scrollElement.clientHeight
+        setShowScrollIndicator(hasScroll)
+      }
+    }
+
+    checkScroll()
+    // rules가 변경될 때마다 체크
+    const timer = setTimeout(checkScroll, 100)
+    return () => clearTimeout(timer)
+  }, [rules])
 
   const addRule = () => {
     if (newRule.listenPort && newRule.connectAddress && newRule.connectPort) {
@@ -89,34 +107,44 @@ export default function PortProxyPage() {
       </Card>
 
       {/* Existing Rules */}
-      <div>
+      <div className="relative">
         <h3 className="text-base font-semibold text-foreground mb-4">현재 규칙</h3>
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-4">
-            {rules.map((rule) => (
-              <Card key={rule.id} className="p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">수신 포트</p>
-                      <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
+        <div ref={scrollAreaRef}>
+          <ScrollArea className="h-[400px] pr-4">
+            <div className="space-y-4">
+              {rules.map((rule) => (
+                <Card key={rule.id} className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">수신 포트</p>
+                        <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
+                      </div>
+                      <span className="text-muted-foreground text-lg">→</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">연결 대상</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {rule.connectAddress}:{rule.connectPort}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-muted-foreground text-lg">→</span>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">연결 대상</p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {rule.connectAddress}:{rule.connectPort}
-                      </p>
-                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => deleteRule(rule.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => deleteRule(rule.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+        {showScrollIndicator && (
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none flex items-end justify-center pb-2">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <ChevronDown className="w-4 h-4 animate-bounce" />
+              <span>아래로 스크롤하여 더보기</span>
+            </div>
           </div>
-        </ScrollArea>
+        )}
       </div>
     </div>
   )
