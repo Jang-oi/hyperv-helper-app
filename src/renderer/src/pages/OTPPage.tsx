@@ -96,18 +96,28 @@ export default function OTPPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
+  const progress = (timeLeft / 30) * 100
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-foreground mb-5">OTP 관리</h2>
 
-      <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/30 rounded-lg mb-4">
-        <span className="text-xs font-medium text-muted-foreground">다음 갱신</span>
-        <span className="text-lg font-bold text-primary">{timeLeft}초</span>
-      </div>
+      <Card className="p-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-muted-foreground">다음 갱신</span>
+          <span className="text-xl font-bold text-primary">{timeLeft}초</span>
+        </div>
+        <div className="w-full bg-secondary rounded-full h-2">
+          <div
+            className="bg-primary h-2 rounded-full transition-all duration-1000"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </Card>
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[480px]">
+          <ScrollArea className="h-[380px]">
             <div className="space-y-3 pr-4">
               {accounts.map((account) => (
                 <Card key={account.id} className="p-3.5">
@@ -146,7 +156,7 @@ export default function OTPPage() {
           </ScrollArea>
         </div>
         {showScrollIndicator && (
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none flex items-end justify-center pb-2">
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none flex items-end justify-center pb-3">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <ChevronDown className="w-4 h-4 animate-bounce" />
               <span>아래로 스크롤하여 더보기</span>
