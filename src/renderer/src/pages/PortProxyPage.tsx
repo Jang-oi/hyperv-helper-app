@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Trash2, Plus } from "lucide-react"
 
 interface ProxyRule {
@@ -88,30 +89,34 @@ export default function PortProxyPage() {
       </Card>
 
       {/* Existing Rules */}
-      <div className="space-y-4">
-        <h3 className="text-base font-semibold text-foreground">현재 규칙</h3>
-        {rules.map((rule) => (
-          <Card key={rule.id} className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">수신 포트</p>
-                  <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
+      <div>
+        <h3 className="text-base font-semibold text-foreground mb-4">현재 규칙</h3>
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4">
+            {rules.map((rule) => (
+              <Card key={rule.id} className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">수신 포트</p>
+                      <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
+                    </div>
+                    <span className="text-muted-foreground text-lg">→</span>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">연결 대상</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {rule.connectAddress}:{rule.connectPort}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => deleteRule(rule.id)}>
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
                 </div>
-                <span className="text-muted-foreground text-lg">→</span>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">연결 대상</p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {rule.connectAddress}:{rule.connectPort}
-                  </p>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => deleteRule(rule.id)}>
-                <Trash2 className="w-4 h-4 text-destructive" />
-              </Button>
-            </div>
-          </Card>
-        ))}
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   )

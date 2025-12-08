@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Copy, Check, Plus, Trash2 } from "lucide-react"
 
 interface OTPAccount {
@@ -99,31 +100,33 @@ export default function OTPPage() {
         </div>
       </Card>
 
-      <div className="space-y-4 mb-6">
-        {accounts.map((account) => (
-          <Card key={account.id} className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-muted-foreground mb-2">{account.alias}</p>
-                <div className="flex items-center gap-3">
-                  <p className="text-3xl font-bold text-primary tracking-wider">{account.code}</p>
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(account.code, account.id)}>
-                    {copiedId === account.id ? (
-                      <Check className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Copy className="w-5 h-5" />
-                    )}
-                  </Button>
+      <ScrollArea className="h-[350px] mb-6">
+        <div className="space-y-4 pr-4">
+          {accounts.map((account) => (
+            <Card key={account.id} className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">{account.alias}</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-3xl font-bold text-primary tracking-wider">{account.code}</p>
+                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(account.code, account.id)}>
+                      {copiedId === account.id ? (
+                        <Check className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Copy className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 font-mono">{account.key}</p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 font-mono">{account.key}</p>
+                <Button variant="ghost" size="sm" onClick={() => handleDeleteAccount(account.id)}>
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => handleDeleteAccount(account.id)}>
-                <Trash2 className="w-4 h-4 text-destructive" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
 
       <Card className="p-6">
         <h3 className="text-base font-semibold text-foreground mb-5">새 OTP 계정 추가</h3>
