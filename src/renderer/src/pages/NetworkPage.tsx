@@ -1,31 +1,29 @@
-
-
-import { useState } from "react"
-import { FadeInSection } from "../components/FadeInSection"
+import { useState } from 'react'
+import { FadeInSection } from '../components/FadeInSection'
 
 export default function NetworkPage() {
   const [ipConfig, setIpConfig] = useState({
-    ip: "",
-    subnet: "",
-    gateway: "",
-    dns: "",
+    ip: '',
+    subnet: '',
+    gateway: '',
+    dns: ''
   })
 
-  const [hostname, setHostname] = useState("")
-  const [proxyRules, setProxyRules] = useState([{ listenPort: "", connectAddress: "", connectPort: "" }])
+  const [hostname, setHostname] = useState('')
+  const [proxyRules, setProxyRules] = useState([{ listenPort: '', connectAddress: '', connectPort: '' }])
 
   const handleApplyIP = () => {
-    console.log("Applying IP configuration:", ipConfig)
+    console.log('Applying IP configuration:', ipConfig)
     // Electron IPC call would go here
   }
 
   const handleApplyHostname = () => {
-    console.log("Applying hostname:", hostname)
+    console.log('Applying hostname:', hostname)
     // Electron IPC call would go here
   }
 
   const addProxyRule = () => {
-    setProxyRules([...proxyRules, { listenPort: "", connectAddress: "", connectPort: "" }])
+    setProxyRules([...proxyRules, { listenPort: '', connectAddress: '', connectPort: '' }])
   }
 
   return (

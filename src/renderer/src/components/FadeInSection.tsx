@@ -1,7 +1,5 @@
-
-
-import { motion } from "framer-motion"
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react'
+import { motion } from 'framer-motion'
 
 interface FadeInSectionProps {
   children: ReactNode
@@ -13,11 +11,11 @@ export const FadeInSection = ({ children, delay = 0 }: FadeInSectionProps) => {
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       transition={{
         duration: 0.8,
         delay: delay,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1]
       }}
     >
       {children}

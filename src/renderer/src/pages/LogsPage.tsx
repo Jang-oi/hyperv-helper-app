@@ -1,55 +1,53 @@
-
-
-import { useState } from "react"
-import { FadeInSection } from "../components/FadeInSection"
-import { Terminal, Download, Trash2 } from "lucide-react"
+import { useState } from 'react'
+import { Download, Terminal, Trash2 } from 'lucide-react'
+import { FadeInSection } from '../components/FadeInSection'
 
 interface LogEntry {
   id: string
   timestamp: string
-  level: "info" | "warning" | "error" | "success"
+  level: 'info' | 'warning' | 'error' | 'success'
   message: string
 }
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([
-    { id: "1", timestamp: new Date().toISOString(), level: "info", message: "Application started" },
+    { id: '1', timestamp: new Date().toISOString(), level: 'info', message: 'Application started' },
     {
-      id: "2",
+      id: '2',
       timestamp: new Date().toISOString(),
-      level: "success",
-      message: "Network configuration applied successfully",
+      level: 'success',
+      message: 'Network configuration applied successfully'
     },
-    { id: "3", timestamp: new Date().toISOString(), level: "warning", message: "DNS server response time is high" },
+    { id: '3', timestamp: new Date().toISOString(), level: 'warning', message: 'DNS server response time is high' }
   ])
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "info":
-        return "text-blue-400"
-      case "warning":
-        return "text-yellow-400"
-      case "error":
-        return "text-red-400"
-      case "success":
-        return "text-green-400"
+      case 'info':
+        return 'text-blue-400'
+      case 'warning':
+        return 'text-yellow-400'
+      case 'error':
+        return 'text-red-400'
+      case 'success':
+        return 'text-green-400'
       default:
-        return "text-stone-400"
+        return 'text-stone-400'
     }
   }
 
   const getLevelBg = (level: string) => {
     switch (level) {
-      case "info":
-        return "bg-blue-500/10"
-      case "warning":
-        return "bg-yellow-500/10"
-      case "error":
-        return "bg-red-500/10"
-      case "success":
-        return "bg-green-500/10"
+      case 'info':
+        return 'bg-blue-500/10'
+      case 'warning':
+        return 'bg-yellow-500/10'
+      case 'error':
+        return 'bg-red-500/10'
+      case 'success':
+        return 'bg-green-500/10'
       default:
-        return "bg-stone-500/10"
+        return 'bg-stone-500/10'
     }
   }
 
@@ -58,10 +56,10 @@ export default function LogsPage() {
   }
 
   const handleExportLogs = () => {
-    const logText = logs.map((log) => `[${log.timestamp}] [${log.level.toUpperCase()}] ${log.message}`).join("\n")
+    const logText = logs.map((log) => `[${log.timestamp}] [${log.level.toUpperCase()}] ${log.message}`).join('\n')
 
     // In Electron, you would use dialog.showSaveDialog and fs.writeFile
-    console.log("Exporting logs:", logText)
+    console.log('Exporting logs:', logText)
   }
 
   return (

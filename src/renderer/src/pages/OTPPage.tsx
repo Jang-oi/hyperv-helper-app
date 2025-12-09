@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Progress } from "@/components/ui/progress"
-import { Copy, Check, Plus, Trash2, ChevronDown } from "lucide-react"
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, Copy, Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface OTPAccount {
   id: string
@@ -16,17 +16,17 @@ interface OTPAccount {
 export default function OTPPage() {
   const [accounts, setAccounts] = useState<OTPAccount[]>([
     {
-      id: "1",
-      alias: "Google 계정 1",
-      key: "JBSWY3DPEHPK3PXP",
-      code: "123456",
+      id: '1',
+      alias: 'Google 계정 1',
+      key: 'JBSWY3DPEHPK3PXP',
+      code: '123456'
     },
     {
-      id: "2",
-      alias: "Google 계정 2",
-      key: "HXDMVJECJJWSRB3H",
-      code: "654321",
-    },
+      id: '2',
+      alias: 'Google 계정 2',
+      key: 'HXDMVJECJJWSRB3H',
+      code: '654321'
+    }
   ])
   const [timeLeft, setTimeLeft] = useState(30)
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -34,8 +34,8 @@ export default function OTPPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   // New account form
-  const [newAlias, setNewAlias] = useState("")
-  const [newKey, setNewKey] = useState("")
+  const [newAlias, setNewAlias] = useState('')
+  const [newKey, setNewKey] = useState('')
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -44,8 +44,8 @@ export default function OTPPage() {
           setAccounts((prevAccounts) =>
             prevAccounts.map((account) => ({
               ...account,
-              code: Math.floor(100000 + Math.random() * 900000).toString(),
-            })),
+              code: Math.floor(100000 + Math.random() * 900000).toString()
+            }))
           )
           return 30
         }
@@ -59,7 +59,7 @@ export default function OTPPage() {
   useEffect(() => {
     // 스크롤 가능 여부 체크
     const checkScroll = () => {
-      const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+      const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
       if (scrollElement) {
         const hasScroll = scrollElement.scrollHeight > scrollElement.clientHeight
         setShowScrollIndicator(hasScroll)
@@ -77,11 +77,11 @@ export default function OTPPage() {
         id: Date.now().toString(),
         alias: newAlias,
         key: newKey,
-        code: Math.floor(100000 + Math.random() * 900000).toString(),
+        code: Math.floor(100000 + Math.random() * 900000).toString()
       }
       setAccounts([...accounts, newAccount])
-      setNewAlias("")
-      setNewKey("")
+      setNewAlias('')
+      setNewKey('')
     }
   }
 
@@ -119,24 +119,10 @@ export default function OTPPage() {
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-xl font-bold text-primary tracking-wider">{account.code}</p>
                       <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => copyToClipboard(account.code, account.id)}
-                        >
-                          {copiedId === account.id ? (
-                            <Check className="w-3 h-3 text-primary" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(account.code, account.id)}>
+                          {copiedId === account.id ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => handleDeleteAccount(account.id)}
-                        >
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleDeleteAccount(account.id)}>
                           <Trash2 className="w-3 h-3 text-destructive" />
                         </Button>
                       </div>

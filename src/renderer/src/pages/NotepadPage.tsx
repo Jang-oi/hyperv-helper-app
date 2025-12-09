@@ -1,28 +1,27 @@
-import type React from "react"
-
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type React from 'react'
+import { useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface NoteContent {
   [key: string]: string
 }
 
 export default function NotepadPage() {
-  const [activeTab, setActiveTab] = useState("note-1")
+  const [activeTab, setActiveTab] = useState('note-1')
   const [noteContents, setNoteContents] = useState<NoteContent>({
-    "note-1": "",
-    "note-2": "",
-    "note-3": "",
-    "note-4": "",
-    "note-5": "",
+    'note-1': '',
+    'note-2': '',
+    'note-3': '',
+    'note-4': '',
+    'note-5': ''
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>, noteId: string) => {
     const newContent = e.target.value
     setNoteContents((prev) => ({
       ...prev,
-      [noteId]: newContent,
+      [noteId]: newContent
     }))
     // electron-store auto-save would happen here
     console.log(`[v0] Auto-saving ${noteId} to electron-store`)
@@ -45,7 +44,7 @@ export default function NotepadPage() {
           <TabsTrigger value="note-5">메모 5</TabsTrigger>
         </TabsList>
 
-        {["note-1", "note-2", "note-3", "note-4", "note-5"].map((noteId) => (
+        {['note-1', 'note-2', 'note-3', 'note-4', 'note-5'].map((noteId) => (
           <TabsContent key={noteId} value={noteId} className="flex-1 flex flex-col min-h-0 mt-0">
             <Card className="p-0 overflow-hidden flex-1 flex flex-col min-h-[488px]">
               <textarea
@@ -60,7 +59,7 @@ export default function NotepadPage() {
       </Tabs>
 
       <p className="text-sm text-muted-foreground mt-4 flex-shrink-0">
-        {currentContent.length} 글자 | {currentContent.split("\n").length} 줄 | electron-store를 통해 자동으로 저장됩니다
+        {currentContent.length} 글자 | {currentContent.split('\n').length} 줄 | electron-store를 통해 자동으로 저장됩니다
       </p>
     </div>
   )

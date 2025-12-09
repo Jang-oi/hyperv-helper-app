@@ -1,10 +1,8 @@
-
-
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Download, CheckCircle, RefreshCw } from "lucide-react"
+import { useState } from 'react'
+import { CheckCircle, Download, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface UpdateLog {
   version: string
@@ -14,24 +12,24 @@ interface UpdateLog {
 
 const updateHistory: UpdateLog[] = [
   {
-    version: "1.2.0",
-    date: "2024-01-15",
-    changes: ["OTP 기능 추가", "UI 개선", "버그 수정"],
+    version: '1.2.0',
+    date: '2024-01-15',
+    changes: ['OTP 기능 추가', 'UI 개선', '버그 수정']
   },
   {
-    version: "1.1.0",
-    date: "2023-12-10",
-    changes: ["북마크 기능 추가", "PortProxy 설정 기능 개선"],
+    version: '1.1.0',
+    date: '2023-12-10',
+    changes: ['북마크 기능 추가', 'PortProxy 설정 기능 개선']
   },
   {
-    version: "1.0.0",
-    date: "2023-11-01",
-    changes: ["초기 릴리즈", "IP 변경 기능", "호스트네임 변경 기능"],
-  },
+    version: '1.0.0',
+    date: '2023-11-01',
+    changes: ['초기 릴리즈', 'IP 변경 기능', '호스트네임 변경 기능']
+  }
 ]
 
 export default function VersionPage() {
-  const currentVersion = "1.2.0"
+  const currentVersion = '1.2.0'
   const [isLatest] = useState(true) // setIsLatest will be used for update checks
   const [isChecking, setIsChecking] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -39,7 +37,7 @@ export default function VersionPage() {
   const handleCheckUpdate = () => {
     setIsChecking(true)
     // Electron IPC call to check for updates
-    console.log("Checking for updates...")
+    console.log('Checking for updates...')
     setTimeout(() => {
       setIsChecking(false)
       // 테스트용: 업데이트 가능 상태로 변경하려면 아래 주석 해제
@@ -50,7 +48,7 @@ export default function VersionPage() {
   const handleUpdate = () => {
     setIsUpdating(true)
     // Electron IPC call to download and install update
-    console.log("Downloading update...")
+    console.log('Downloading update...')
     setTimeout(() => {
       setIsUpdating(false)
     }, 3000)
@@ -75,14 +73,14 @@ export default function VersionPage() {
                   <span className="text-sm font-medium">최신 버전</span>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleCheckUpdate} disabled={isChecking}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isChecking ? "animate-spin" : ""}`} />
-                  {isChecking ? "확인 중..." : "업데이트 확인"}
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
+                  {isChecking ? '확인 중...' : '업데이트 확인'}
                 </Button>
               </>
             ) : (
               <Button onClick={handleUpdate} disabled={isUpdating}>
                 <Download className="w-4 h-4 mr-2" />
-                {isUpdating ? "다운로드 중..." : "업데이트"}
+                {isUpdating ? '다운로드 중...' : '업데이트'}
               </Button>
             )}
           </div>

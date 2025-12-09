@@ -1,11 +1,9 @@
-
-
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trash2, Plus, ChevronDown } from "lucide-react"
+import { useEffect, useRef, useState } from 'react'
+import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ProxyRule {
   id: string
@@ -17,16 +15,16 @@ interface ProxyRule {
 export default function PortProxyPage() {
   const [rules, setRules] = useState<ProxyRule[]>([
     {
-      id: "1",
-      listenPort: "8080",
-      connectAddress: "192.168.1.100",
-      connectPort: "80",
-    },
+      id: '1',
+      listenPort: '8080',
+      connectAddress: '192.168.1.100',
+      connectPort: '80'
+    }
   ])
   const [newRule, setNewRule] = useState({
-    listenPort: "",
-    connectAddress: "",
-    connectPort: "",
+    listenPort: '',
+    connectAddress: '',
+    connectPort: ''
   })
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -34,7 +32,7 @@ export default function PortProxyPage() {
   useEffect(() => {
     // 스크롤 가능 여부 체크
     const checkScroll = () => {
-      const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+      const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
       if (scrollElement) {
         const hasScroll = scrollElement.scrollHeight > scrollElement.clientHeight
         setShowScrollIndicator(hasScroll)
@@ -53,10 +51,10 @@ export default function PortProxyPage() {
         ...rules,
         {
           id: Date.now().toString(),
-          ...newRule,
-        },
+          ...newRule
+        }
       ])
-      setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
+      setNewRule({ listenPort: '', connectAddress: '', connectPort: '' })
     }
   }
 

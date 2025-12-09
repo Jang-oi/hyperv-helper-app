@@ -7,7 +7,9 @@
       "Bash(git reset:*)",
       "Bash(git commit:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,10 +1,8 @@
-
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Trash2, ExternalLink, Plus } from "lucide-react"
+import { useState } from 'react'
+import { ExternalLink, Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 interface Bookmark {
   id: string
@@ -14,15 +12,15 @@ interface Bookmark {
 
 export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([
-    { id: "1", title: "Hyper-V 관리자", url: "https://docs.microsoft.com/hyper-v" },
-    { id: "2", title: "PowerShell 문서", url: "https://docs.microsoft.com/powershell" },
+    { id: '1', title: 'Hyper-V 관리자', url: 'https://docs.microsoft.com/hyper-v' },
+    { id: '2', title: 'PowerShell 문서', url: 'https://docs.microsoft.com/powershell' }
   ])
-  const [newBookmark, setNewBookmark] = useState({ title: "", url: "" })
+  const [newBookmark, setNewBookmark] = useState({ title: '', url: '' })
 
   const addBookmark = () => {
     if (newBookmark.title && newBookmark.url) {
       setBookmarks([...bookmarks, { id: Date.now().toString(), ...newBookmark }])
-      setNewBookmark({ title: "", url: "" })
+      setNewBookmark({ title: '', url: '' })
     }
   }
 
@@ -31,7 +29,7 @@ export default function BookmarksPage() {
   }
 
   const openBookmark = (url: string) => {
-    console.log("[v0] Opening bookmark:", url)
+    console.log('[v0] Opening bookmark:', url)
     // Electron shell.openExternal would go here
   }
 

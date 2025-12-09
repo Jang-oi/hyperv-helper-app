@@ -1,32 +1,32 @@
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Header from "./components/Header"
-import IPChangePage from "./pages/IPChangePage"
-import HostnameChangePage from "./pages/HostnameChangePage"
-import PortProxyPage from "./pages/PortProxyPage"
-import BookmarksPage from "./pages/BookmarksPage"
-import OTPPage from "./pages/OTPPage"
-import NotepadPage from "./pages/NotepadPage"
-import VersionPage from "./pages/VersionPage"
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import Header from './components/Header'
+import BookmarksPage from './pages/BookmarksPage'
+import HostnameChangePage from './pages/HostnameChangePage'
+import IPChangePage from './pages/IPChangePage'
+import NotepadPage from './pages/NotepadPage'
+import OTPPage from './pages/OTPPage'
+import PortProxyPage from './pages/PortProxyPage'
+import VersionPage from './pages/VersionPage'
 
 function App() {
-  const [activePage, setActivePage] = useState("ip-change")
+  const [activePage, setActivePage] = useState('ip-change')
 
   const renderPage = () => {
     switch (activePage) {
-      case "ip-change":
+      case 'ip-change':
         return <IPChangePage />
-      case "hostname-change":
+      case 'hostname-change':
         return <HostnameChangePage />
-      case "portproxy":
+      case 'portproxy':
         return <PortProxyPage />
-      case "bookmarks":
+      case 'bookmarks':
         return <BookmarksPage />
-      case "otp":
+      case 'otp':
         return <OTPPage />
-      case "notepad":
+      case 'notepad':
         return <NotepadPage />
-      case "version":
+      case 'version':
         return <VersionPage />
       default:
         return <IPChangePage />
