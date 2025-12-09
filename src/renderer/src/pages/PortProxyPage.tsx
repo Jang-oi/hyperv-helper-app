@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Trash2, Plus, RefreshCw, ChevronDown, Info } from "lucide-react"
+import { toast } from "sonner"
 
 interface ProxyRule {
   id: string
@@ -18,6 +19,7 @@ interface ProxyRule {
 
 export default function PortProxyPage() {
   const [rules, setRules] = useState<ProxyRule[]>([])
+  const [loading, setLoading] = useState(false)
 
   const [wasDevHost, setWasDevHost] = useState("")
   const [sapDevHost, setSapDevHost] = useState("")
@@ -33,6 +35,31 @@ export default function PortProxyPage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
+  // 실제 Windows netsh에서 규칙 조회
+  const loadRules = async () => {
+    setLoading(true)
+    try {
+      const result = await window.api.portproxy.getRules()
+      if (result.success && result.rules) {
+        setRules(result.rules)
+      } else {
+        toast.error(result.error || "규칙 조회에 실패했습니다.")
+        setRules([])
+      }
+    } catch (error) {
+      toast.error("규칙 조회 중 오류가 발생했습니다.")
+      console.error(error)
+      setRules([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 페이지 로드 시 규칙 조회
+  useEffect(() => {
+    loadRules()
+  }, [])
+
   useEffect(() => {
     const checkScroll = () => {
       const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
@@ -47,62 +74,168 @@ export default function PortProxyPage() {
     return () => clearTimeout(timer)
   }, [rules])
 
-  const addWasDevRules = () => {
-    if (!wasDevHost.trim()) return
-    const newRules: ProxyRule[] = [
-      { id: `was-80-${Date.now()}`, listenPort: "80", connectAddress: wasDevHost, connectPort: "80" },
-      { id: `was-443-${Date.now()}`, listenPort: "443", connectAddress: wasDevHost, connectPort: "443" },
-      { id: `was-8082-${Date.now()}`, listenPort: "8082", connectAddress: wasDevHost, connectPort: "8082" },
-    ]
-    setRules([...rules, ...newRules])
-    setWasDevHost("")
-  }
+  // WAS Dev 프리셋 추가 (80, 443, 8082)
+  const addWasDevRules = async () => {
+    if (!wasDevHost.trim()) {
+      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      return
+    }
 
-  const addSapDevRules = () => {
-    if (!sapDevHost.trim()) return
-    const newRules: ProxyRule[] = [
-      { id: `sapdev-3200-${Date.now()}`, listenPort: "3200", connectAddress: sapDevHost, connectPort: "3200" },
-      { id: `sapdev-3300-${Date.now()}`, listenPort: "3300", connectAddress: sapDevHost, connectPort: "3300" },
-    ]
-    setRules([...rules, ...newRules])
-    setSapDevHost("")
-  }
+    setLoading(true)
+    try {
+      // 3개의 규칙을 순차적으로 추가
+      const ports = [
+        { listen: "80", connect: "80" },
+        { listen: "443", connect: "443" },
+        { listen: "8082", connect: "8082" },
+      ]
 
-  const addSapQasRules = () => {
-    if (!sapQasHost.trim()) return
-    const newRules: ProxyRule[] = [
-      { id: `sapqas-3201-${Date.now()}`, listenPort: "3201", connectAddress: sapQasHost, connectPort: "3200" },
-      { id: `sapqas-3301-${Date.now()}`, listenPort: "3301", connectAddress: sapQasHost, connectPort: "3300" },
-    ]
-    setRules([...rules, ...newRules])
-    setSapQasHost("")
-  }
+      for (const port of ports) {
+        const result = await window.api.portproxy.addRule(
+          port.listen,
+          wasDevHost.trim(),
+          port.connect
+        )
+        if (!result.success) {
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          await loadRules()
+          return
+        }
+      }
 
-  const addCustomRule = () => {
-    if (newRule.listenPort && newRule.connectAddress && newRule.connectPort) {
-      setRules([
-        ...rules,
-        {
-          id: Date.now().toString(),
-          ...newRule,
-        },
-      ])
-      setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
+      toast.success("WAS Dev 규칙 3개가 추가되었습니다.")
+      setWasDevHost("")
+      await loadRules()
+    } catch (error) {
+      toast.error("WAS Dev 규칙 추가 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const addFromPaste = () => {
-    if (!pasteText.trim()) return
+  // SAP Dev 프리셋 추가 (3200, 3300)
+  const addSapDevRules = async () => {
+    if (!sapDevHost.trim()) {
+      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const ports = [
+        { listen: "3200", connect: "3200" },
+        { listen: "3300", connect: "3300" },
+      ]
+
+      for (const port of ports) {
+        const result = await window.api.portproxy.addRule(
+          port.listen,
+          sapDevHost.trim(),
+          port.connect
+        )
+        if (!result.success) {
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          await loadRules()
+          return
+        }
+      }
+
+      toast.success("SAP Dev 규칙 2개가 추가되었습니다.")
+      setSapDevHost("")
+      await loadRules()
+    } catch (error) {
+      toast.error("SAP Dev 규칙 추가 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // SAP QAS 프리셋 추가 (3201→3200, 3301→3300)
+  const addSapQasRules = async () => {
+    if (!sapQasHost.trim()) {
+      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const ports = [
+        { listen: "3201", connect: "3200" },
+        { listen: "3301", connect: "3300" },
+      ]
+
+      for (const port of ports) {
+        const result = await window.api.portproxy.addRule(
+          port.listen,
+          sapQasHost.trim(),
+          port.connect
+        )
+        if (!result.success) {
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          await loadRules()
+          return
+        }
+      }
+
+      toast.success("SAP QAS 규칙 2개가 추가되었습니다.")
+      setSapQasHost("")
+      await loadRules()
+    } catch (error) {
+      toast.error("SAP QAS 규칙 추가 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 커스텀 단일 규칙 추가
+  const addCustomRule = async () => {
+    if (!newRule.listenPort || !newRule.connectAddress || !newRule.connectPort) {
+      toast.warning("모든 필드를 입력해주세요.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const result = await window.api.portproxy.addRule(
+        newRule.listenPort.trim(),
+        newRule.connectAddress.trim(),
+        newRule.connectPort.trim()
+      )
+
+      if (result.success) {
+        toast.success("규칙이 추가되었습니다.")
+        setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
+        await loadRules()
+      } else {
+        toast.error(result.error || "규칙 추가에 실패했습니다.")
+      }
+    } catch (error) {
+      toast.error("규칙 추가 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // netsh 출력 붙여넣기로 일괄 등록
+  const addFromPaste = async () => {
+    if (!pasteText.trim()) {
+      toast.warning("netsh 출력 내용을 붙여넣어주세요.")
+      return
+    }
 
     const lines = pasteText.split("\n")
-    const parsedRules: ProxyRule[] = []
+    const parsedRules: { listenPort: string; connectAddress: string; connectPort: string }[] = []
 
     lines.forEach((line) => {
       const trimmed = line.trim()
       const parts = trimmed.split(/\s+/)
+      // 0.0.0.0 포트 주소 포트 형식 파싱
       if (parts.length >= 4 && parts[1].match(/^\d+$/)) {
         parsedRules.push({
-          id: `paste-${Date.now()}-${Math.random()}`,
           listenPort: parts[1],
           connectAddress: parts[2],
           connectPort: parts[3],
@@ -110,27 +243,77 @@ export default function PortProxyPage() {
       }
     })
 
-    if (parsedRules.length > 0) {
-      setRules([...rules, ...parsedRules])
+    if (parsedRules.length === 0) {
+      toast.warning("유효한 규칙을 찾을 수 없습니다.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      let successCount = 0
+      for (const rule of parsedRules) {
+        const result = await window.api.portproxy.addRule(
+          rule.listenPort,
+          rule.connectAddress,
+          rule.connectPort
+        )
+        if (result.success) {
+          successCount++
+        }
+      }
+
+      toast.success(`${successCount}개의 규칙이 추가되었습니다.`)
       setPasteText("")
+      await loadRules()
+    } catch (error) {
+      toast.error("일괄 등록 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
+  // DNS 재연결 (모든 규칙 재적용)
   const reapplyRules = async () => {
+    if (rules.length === 0) {
+      toast.warning("재적용할 규칙이 없습니다.")
+      return
+    }
+
+    setLoading(true)
     try {
       const result = await window.api.portproxy.applyRules(rules)
       if (result.success) {
-        console.log("모든 PortProxy 규칙이 성공적으로 재적용되었습니다.")
+        toast.success("모든 규칙이 재적용되었습니다.")
+        await loadRules()
       } else {
-        console.error("PortProxy 규칙 재적용 실패:", result.error)
+        toast.error(result.error || "규칙 재적용에 실패했습니다.")
       }
     } catch (error) {
-      console.error("PortProxy 규칙 재적용 중 오류 발생:", error)
+      toast.error("규칙 재적용 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const deleteRule = (id: string) => {
-    setRules(rules.filter((rule) => rule.id !== id))
+  // 단일 규칙 삭제
+  const deleteRule = async (listenPort: string) => {
+    setLoading(true)
+    try {
+      const result = await window.api.portproxy.deleteRule(listenPort)
+      if (result.success) {
+        toast.success(`포트 ${listenPort} 규칙이 삭제되었습니다.`)
+        await loadRules()
+      } else {
+        toast.error(result.error || "규칙 삭제에 실패했습니다.")
+      }
+    } catch (error) {
+      toast.error("규칙 삭제 중 오류가 발생했습니다.")
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -157,8 +340,9 @@ export default function PortProxyPage() {
                 value={wasDevHost}
                 onChange={(e) => setWasDevHost(e.target.value)}
                 className="flex-1 h-9"
+                disabled={loading}
               />
-              <Button onClick={addWasDevRules} size="sm" className="h-9 px-4">
+              <Button onClick={addWasDevRules} size="sm" className="h-9 px-4" disabled={loading}>
                 추가
               </Button>
             </div>
@@ -175,8 +359,9 @@ export default function PortProxyPage() {
                 value={sapDevHost}
                 onChange={(e) => setSapDevHost(e.target.value)}
                 className="flex-1 h-9"
+                disabled={loading}
               />
-              <Button onClick={addSapDevRules} size="sm" className="h-9 px-4">
+              <Button onClick={addSapDevRules} size="sm" className="h-9 px-4" disabled={loading}>
                 추가
               </Button>
             </div>
@@ -193,8 +378,9 @@ export default function PortProxyPage() {
                 value={sapQasHost}
                 onChange={(e) => setSapQasHost(e.target.value)}
                 className="flex-1 h-9"
+                disabled={loading}
               />
-              <Button onClick={addSapQasRules} size="sm" className="h-9 px-4">
+              <Button onClick={addSapQasRules} size="sm" className="h-9 px-4" disabled={loading}>
                 추가
               </Button>
             </div>
@@ -213,6 +399,7 @@ export default function PortProxyPage() {
                   value={newRule.listenPort}
                   onChange={(e) => setNewRule({ ...newRule, listenPort: e.target.value })}
                   className="h-9"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -223,6 +410,7 @@ export default function PortProxyPage() {
                   value={newRule.connectAddress}
                   onChange={(e) => setNewRule({ ...newRule, connectAddress: e.target.value })}
                   className="h-9"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -233,10 +421,11 @@ export default function PortProxyPage() {
                   value={newRule.connectPort}
                   onChange={(e) => setNewRule({ ...newRule, connectPort: e.target.value })}
                   className="h-9"
+                  disabled={loading}
                 />
               </div>
             </div>
-            <Button onClick={addCustomRule} className="mt-3 w-full h-9" size="sm">
+            <Button onClick={addCustomRule} className="mt-3 w-full h-9" size="sm" disabled={loading}>
               <Plus className="w-4 h-4 mr-2" />
               규칙 추가
             </Button>
@@ -256,8 +445,9 @@ export default function PortProxyPage() {
               onChange={(e) => setPasteText(e.target.value)}
               rows={8}
               className="font-mono text-xs mb-3"
+              disabled={loading}
             />
-            <Button onClick={addFromPaste} className="w-full h-9" size="sm">
+            <Button onClick={addFromPaste} className="w-full h-9" size="sm" disabled={loading}>
               <Plus className="w-4 h-4 mr-2" />
               붙여넣기 내용 적용
             </Button>
@@ -274,7 +464,7 @@ export default function PortProxyPage() {
                   서버 이중화나 DNS 변경으로 기존 연결이 끊겼을 때, 현재 등록된 모든 규칙을 다시 적용하여 연결을
                   복구합니다. SAP 서버나 WAS가 페일오버되어 DNS가 변경된 경우 유용합니다.
                 </p>
-                <Button onClick={reapplyRules} disabled={rules.length === 0} size="sm" className="h-9 w-full">
+                <Button onClick={reapplyRules} disabled={rules.length === 0 || loading} size="sm" className="h-9 w-full">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   DNS 재연결 (모든 규칙 재적용)
                 </Button>
@@ -283,7 +473,11 @@ export default function PortProxyPage() {
           </Card>
 
           <h3 className="text-sm font-semibold text-foreground mb-3">등록된 규칙 ({rules.length})</h3>
-          {rules.length === 0 ? (
+          {loading ? (
+            <Card className="p-6 text-center">
+              <p className="text-sm text-muted-foreground">규칙을 불러오는 중...</p>
+            </Card>
+          ) : rules.length === 0 ? (
             <Card className="p-6 text-center">
               <p className="text-sm text-muted-foreground">등록된 규칙이 없습니다.</p>
             </Card>
@@ -307,7 +501,13 @@ export default function PortProxyPage() {
                             </p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => deleteRule(rule.id)} className="h-8 w-8 p-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteRule(rule.listenPort)}
+                          className="h-8 w-8 p-0"
+                          disabled={loading}
+                        >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
