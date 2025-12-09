@@ -1,6 +1,10 @@
 import { registerNotepadHandlers } from './notepadHandler'
 import { registerHostnameHandlers } from './hostnameHandler'
 import { registerIPHandlers } from './ipHandler'
+import {registerBookmarksHandlers} from "./bookmarkHandler";
+// --- OTP 핸들러 임포트 추가 ---
+import { registerOTPHandlers } from './otpHandler';
+// ------------------------------------
 
 /**
  * 모든 IPC 핸들러 등록
@@ -16,8 +20,11 @@ export function registerAllHandlers(store: any): void {
   // IP 핸들러
   registerIPHandlers()
 
+  // 북마크 핸들러
+  registerBookmarksHandlers()
+
+  // OTP 핸들러
+  registerOTPHandlers(store)
   // 향후 추가될 핸들러들
   // registerPortProxyHandlers()
-  // registerBookmarksHandlers(store)
-  // registerOTPHandlers(store)
 }

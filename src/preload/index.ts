@@ -14,8 +14,21 @@ const api = {
   },
   ip: {
     getAdapters: () => ipcRenderer.invoke('ip:getAdapters'),
-    getCurrentConfig: (adapterName: string) => ipcRenderer.invoke('ip:getCurrentConfig', adapterName),
-    setConfig: (adapterName: string, config: any) => ipcRenderer.invoke('ip:setConfig', adapterName, config)
+    getCurrentConfig: (adapterIndex: number) => ipcRenderer.invoke('ip:getCurrentConfig', adapterIndex),
+    setConfig: (adapterIndex: number, config: any) => ipcRenderer.invoke('ip:setConfig', adapterIndex, config)
+  },
+  // 💡 북마크 API 추가
+  bookmark: {
+    add: (stage: string, name: string, url: string) => ipcRenderer.invoke('bookmark:add', stage, name, url),
+    addAuto: (stage: string, ip: string) => ipcRenderer.invoke('bookmark:addAuto', stage, ip),
+    get: (stage: string) => ipcRenderer.invoke('bookmark:get', stage),
+  },
+  // 💡 OTP API 추가
+  otp: {
+    getAccounts: () => ipcRenderer.invoke('otp:getAccounts'),
+    addAccount: (alias: string, key: string) => ipcRenderer.invoke('otp:addAccount', alias, key),
+    deleteAccount: (id: string) => ipcRenderer.invoke('otp:deleteAccount', id),
+    getRefreshTime: () => ipcRenderer.invoke('otp:getRefreshTime'),
   },
   system: {
     restart: () => ipcRenderer.invoke('system:restart')

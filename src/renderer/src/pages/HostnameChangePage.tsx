@@ -89,7 +89,7 @@ export default function HostnameChangePage() {
               <label className="text-sm font-medium text-foreground">새 호스트네임</label>
               <Input
                 type="text"
-                placeholder="새로운 컴퓨터 이름 입력"
+                placeholder="새로운 호스트네임 입력"
                 value={hostname}
                 onChange={(e) => setHostname(e.target.value)}
                 disabled={loading}

@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron'
 
+const STORE_KEY_PREFIX = 'notepad';
+
 /**
  * Notepad IPC Handler
  * 메모장 데이터 저장/로드 관리
@@ -7,12 +9,14 @@ import { ipcMain } from 'electron'
 export function registerNotepadHandlers(store: any): void {
   // 특정 메모 로드
   ipcMain.handle('notepad:load', (_event, noteId: string) => {
-    return store.get(`notepad.${noteId}`, '')
+    // 상수를 사용하여 키 구성
+    return store.get(`${STORE_KEY_PREFIX}.${noteId}`, '')
   })
 
   // 메모 저장
   ipcMain.handle('notepad:save', (_event, noteId: string, content: string) => {
-    store.set(`notepad.${noteId}`, content)
+    // 상수를 사용하여 키 구성
+    store.set(`${STORE_KEY_PREFIX}.${noteId}`, content)
     return true
   })
 
@@ -21,7 +25,8 @@ export function registerNotepadHandlers(store: any): void {
     const notes: Record<string, string> = {}
     for (let i = 1; i <= 5; i++) {
       const noteId = `note-${i}`
-      notes[noteId] = store.get(`notepad.${noteId}`, '') as string
+      // 상수를 사용하여 키 구성
+      notes[noteId] = store.get(`${STORE_KEY_PREFIX}.${noteId}`, '') as string
     }
     return notes
   })

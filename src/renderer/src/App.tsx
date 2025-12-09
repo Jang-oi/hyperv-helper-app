@@ -52,7 +52,7 @@ function App() {
           </AnimatePresence>
         </div>
       </main>
-      <Toaster />
+      <Toaster richColors position={"top-center"}/>
     </div>
   )
 }
