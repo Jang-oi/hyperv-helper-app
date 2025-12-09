@@ -112,7 +112,7 @@ export default function OTPPage() {
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[360px]">
+          <ScrollArea className="h-[278px]">
             <div className="space-y-3 pr-4">
               {accounts.map((account) => (
                 <Card key={account.id} className="p-3.5">

@@ -71,7 +71,7 @@ export default function NotepadPage() {
 
         {["note-1", "note-2", "note-3", "note-4", "note-5"].map((noteId) => (
           <TabsContent key={noteId} value={noteId} className="flex-1 flex flex-col min-h-0 mt-0">
-            <Card className="p-0 overflow-hidden flex-1 flex flex-col min-h-[600px]">
+            <Card className="p-0 overflow-hidden flex-1 flex flex-col min-h-[488px]">
               <textarea
                 value={noteContents[noteId]}
                 onChange={(e) => handleChange(e, noteId)}

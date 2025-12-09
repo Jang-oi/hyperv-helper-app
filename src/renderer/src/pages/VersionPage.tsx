@@ -92,7 +92,7 @@ export default function VersionPage() {
       {/* Update History with ScrollArea */}
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-4">업데이트 내역</h3>
-        <ScrollArea className="h-[500px] pr-4">
+        <ScrollArea className="h-[398px] pr-4">
           <div className="space-y-4">
             {updateHistory.map((update) => (
               <Card key={update.version} className="p-5">

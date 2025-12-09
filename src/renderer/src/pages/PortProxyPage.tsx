@@ -110,7 +110,7 @@ export default function PortProxyPage() {
       <div className="relative">
         <h3 className="text-base font-semibold text-foreground mb-4">현재 규칙</h3>
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="h-[318px] pr-4">
             <div className="space-y-4">
               {rules.map((rule) => (
                 <Card key={rule.id} className="p-5">
