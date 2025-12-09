@@ -10,7 +10,8 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
-    height: 720,
+    height: 860,
+    title: 'HyperV Helper',
     show: false,
     resizable: false,
     autoHideMenuBar: true,

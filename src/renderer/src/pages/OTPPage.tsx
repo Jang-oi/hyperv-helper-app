@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -112,7 +110,7 @@ export default function OTPPage() {
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[200px]">
+          <ScrollArea className="h-[250px]">
             <div className="grid grid-cols-2 gap-3">
               {accounts.map((account) => (
                 <Card key={account.id} className="p-3">
@@ -151,7 +149,7 @@ export default function OTPPage() {
           </ScrollArea>
         </div>
         {showScrollIndicator && (
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none flex items-end justify-center pb-3">
+          <div className="absolute bottom-0 left-0 right-0 h-4 flex items-end justify-center">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <ChevronDown className="w-4 h-4 animate-bounce" />
               <span>아래로 스크롤하여 더보기</span>

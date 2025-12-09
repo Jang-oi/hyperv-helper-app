@@ -64,7 +64,7 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
             <div key={item.id} className="relative">
               <button
                 onClick={() => handleMenuClick(item)}
-                className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
+                className={`cursor-pointer px-3.5 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
                   activePage === item.id || (item.children && item.children.some((child) => child.id === activePage))
                     ? "text-primary bg-secondary"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -92,7 +92,7 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
                       <button
                         key={child.id}
                         onClick={() => handleSubMenuClick(child.id)}
-                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                        className={`cursor-pointer w-full px-4 py-2.5 text-left text-sm transition-colors ${
                           activePage === child.id
                             ? "text-primary bg-secondary font-medium"
                             : "text-foreground hover:bg-secondary/50"

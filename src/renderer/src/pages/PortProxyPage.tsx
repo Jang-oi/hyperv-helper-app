@@ -1,4 +1,4 @@
-"use client"
+
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -138,7 +138,7 @@ export default function PortProxyPage() {
           </ScrollArea>
         </div>
         {showScrollIndicator && (
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none flex items-end justify-center pb-3">
+          <div className="absolute bottom-0 left-0 right-0 h-8 flex items-end justify-center">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <ChevronDown className="w-4 h-4 animate-bounce" />
               <span>아래로 스크롤하여 더보기</span>

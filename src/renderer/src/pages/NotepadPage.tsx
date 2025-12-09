@@ -1,12 +1,8 @@
-"use client"
-
 import type React from "react"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Save, FileDown } from "lucide-react"
 
 interface NoteContent {
   [key: string]: string
@@ -32,35 +28,15 @@ export default function NotepadPage() {
     console.log(`[v0] Auto-saving ${noteId} to electron-store`)
   }
 
-  const handleSave = () => {
-    console.log("[v0] Saving note:", activeTab, noteContents[activeTab])
-    // Electron file save would go here
-  }
-
-  const handleExport = () => {
-    console.log("[v0] Exporting note:", activeTab)
-    // Electron file export would go here
-  }
-
   const currentContent = noteContents[activeTab]
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-6 flex-shrink-0">
         <h2 className="text-2xl font-bold text-foreground">메모장</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <FileDown className="w-4 h-4 mr-2" />
-            내보내기
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="w-4 h-4 mr-2" />
-            저장
-          </Button>
-        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 ">
         <TabsList className="grid w-full grid-cols-5 mb-4 flex-shrink-0">
           <TabsTrigger value="note-1">메모 1</TabsTrigger>
           <TabsTrigger value="note-2">메모 2</TabsTrigger>

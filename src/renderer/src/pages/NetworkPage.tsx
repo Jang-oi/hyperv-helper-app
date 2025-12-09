@@ -1,4 +1,4 @@
-"use client"
+
 
 import { useState } from "react"
 import { FadeInSection } from "../components/FadeInSection"
