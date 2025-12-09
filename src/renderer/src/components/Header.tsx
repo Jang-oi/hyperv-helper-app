@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
@@ -40,6 +40,24 @@ interface HeaderProps {
 
 export default function Header({ activePage, onPageChange }: HeaderProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const headerRef = useRef<HTMLElement>(null)
+
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null)
+      }
+    }
+
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [openDropdown])
 
   const handleMenuClick = (menuItem: MenuItem) => {
     if (menuItem.children) {
@@ -56,7 +74,7 @@ export default function Header({ activePage, onPageChange }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-border flex-shrink-0 drag-region">
+    <header ref={headerRef} className="bg-white border-b border-border flex-shrink-0 drag-region">
       <div className="px-8 h-16 flex items-center">
         {/* Navigation */}
         <nav className="flex items-center gap-1 no-drag">

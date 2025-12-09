@@ -1,10 +1,10 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import Store from 'electron-store'
+import ElectronStore from 'electron-store'
 
 // electron-store 초기화
-const store = new Store()
+const store = new ElectronStore()
 
 export const uniIcon = is.dev
   ? join(__dirname, '../../build/icon.ico') // 개발 환경 경로
