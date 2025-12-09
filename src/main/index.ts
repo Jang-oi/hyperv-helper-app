@@ -2,6 +2,7 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { registerAllHandlers } from './handlers'
+import { AdminCheck } from './utils/adminCheck'
 
 // electron-store dynamic import (ESM 패키지)
 let store: any
@@ -55,6 +56,9 @@ function createWindow(): void {
 app.whenReady().then(async () => {
   // electron-store 초기화
   await initStore()
+
+  // 관리자 권한 확인 및 알림
+  await AdminCheck.checkAndNotify()
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')

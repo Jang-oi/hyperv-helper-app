@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Toaster } from '@/components/ui/sonner'
 import Header from './components/Header'
 import BookmarksPage from './pages/BookmarksPage'
 import HostnameChangePage from './pages/HostnameChangePage'
@@ -51,6 +52,7 @@ function App() {
           </AnimatePresence>
         </div>
       </main>
+      <Toaster />
     </div>
   )
 }
