@@ -1,7 +1,7 @@
-import { ipcMain } from 'electron'
 import { exec } from 'child_process'
-import { promisify } from 'util'
 import os from 'os'
+import { promisify } from 'util'
+import { ipcMain } from 'electron'
 import { Validator } from '../utils/validator'
 
 const execAsync = promisify(exec)

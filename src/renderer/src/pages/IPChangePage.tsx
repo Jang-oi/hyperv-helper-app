@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { toast } from 'sonner'
 
 // 이 파일에는 정의되어 있지 않지만, 사용되는 인터페이스 정의
 interface NetworkAdapter {
@@ -63,14 +63,14 @@ export default function IPChangePage() {
 
   // 현재 IP 설정 로드 및 Input 필드 값 설정
   const loadCurrentConfig = async (adapterIndexString: string) => {
-    const adapterIndex = parseInt(adapterIndexString, 10);
-    if (isNaN(adapterIndex)) return;
+    const adapterIndex = parseInt(adapterIndexString, 10)
+    if (isNaN(adapterIndex)) return
 
     try {
       const result = await window.api.ip.getCurrentConfig(adapterIndex)
 
       if (result.success && result.currentConfig) {
-        const config = result.currentConfig;
+        const config = result.currentConfig
 
         // 현재 설정 값을 Input State에 바로 반영
         setIpAddress(config.ip || '')
@@ -79,7 +79,6 @@ export default function IPChangePage() {
         setGateway(config.gateway || '')
         setDns1(config.dns1 || '')
         setDns2(config.dns2 || '')
-
       } else {
         // 설정 조회 실패 시 기본 추천 값으로 초기화 (IP 주소, 게이트웨이, DNS만)
         setIpAddress('')
@@ -111,10 +110,10 @@ export default function IPChangePage() {
       return
     }
 
-    const adapterIndex = parseInt(selectedAdapterIndex, 10);
+    const adapterIndex = parseInt(selectedAdapterIndex, 10)
     if (isNaN(adapterIndex)) {
-      toast.error('유효하지 않은 어댑터 인덱스입니다.');
-      return;
+      toast.error('유효하지 않은 어댑터 인덱스입니다.')
+      return
     }
 
     // IP 유효성 검사 (사용자 코드 유지)
@@ -193,9 +192,7 @@ export default function IPChangePage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               IP 주소
-              <span className="ml-2 text-xs font-normal text-destructive font-bold">
-                (권장: 192.168.12.XXX)
-              </span>
+              <span className="ml-2 text-xs font-normal text-destructive font-bold">(권장: 192.168.12.XXX)</span>
             </label>
             <Input
               type="text"
@@ -210,9 +207,7 @@ export default function IPChangePage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               서브넷 마스크
-              <span className="ml-2 text-xs font-normal text-destructive font-bold">
-                (권장: 255.255.255.0)
-              </span>
+              <span className="ml-2 text-xs font-normal text-destructive font-bold">(권장: 255.255.255.0)</span>
             </label>
             <Input
               type="text"
@@ -227,9 +222,7 @@ export default function IPChangePage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               게이트웨이
-              <span className="ml-2 text-xs font-normal text-destructive font-bold">
-                (권장: 192.168.12.1)
-              </span>
+              <span className="ml-2 text-xs font-normal text-destructive font-bold">(권장: 192.168.12.1)</span>
             </label>
             <Input type="text" placeholder="192.168.12.1" value={gateway} onChange={(e) => setGateway(e.target.value)} disabled={loading} />
           </div>
@@ -238,9 +231,7 @@ export default function IPChangePage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               기본 DNS
-              <span className="ml-2 text-xs font-normal text-destructive font-bold">
-                (권장: 164.124.101.2)
-              </span>
+              <span className="ml-2 text-xs font-normal text-destructive font-bold">(권장: 164.124.101.2)</span>
             </label>
             <Input type="text" placeholder="164.124.101.2" value={dns1} onChange={(e) => setDns1(e.target.value)} disabled={loading} />
           </div>
@@ -249,9 +240,7 @@ export default function IPChangePage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               보조 DNS
-              <span className="ml-2 text-xs font-normal text-destructive font-bold">
-                (권장: 8.8.8.8)
-              </span>
+              <span className="ml-2 text-xs font-normal text-destructive font-bold">(권장: 8.8.8.8)</span>
             </label>
             <Input type="text" placeholder="8.8.8.8" value={dns2} onChange={(e) => setDns2(e.target.value)} disabled={loading} />
           </div>

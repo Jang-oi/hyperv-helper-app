@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -74,9 +74,7 @@ export default function NotepadPage() {
         ))}
       </Tabs>
 
-      <p className="text-sm text-muted-foreground mt-4 flex-shrink-0">
-        입력하면 자동으로 저장됩니다.
-      </p>
+      <p className="text-sm text-muted-foreground mt-4 flex-shrink-0">입력하면 자동으로 저장됩니다.</p>
     </div>
   )
 }

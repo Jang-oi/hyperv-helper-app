@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Plus, RefreshCw, Info } from "lucide-react"
-import { toast } from "sonner"
+import { useEffect, useState } from 'react'
+import { Info, Plus, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ProxyRule {
   id: string
@@ -19,19 +19,19 @@ interface ProxyRule {
 export default function PortProxyPage() {
   const [rules, setRules] = useState<ProxyRule[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState("default")
+  const [activeTab, setActiveTab] = useState('default')
 
-  const [wasDevHost, setWasDevHost] = useState("")
-  const [sapDevHost, setSapDevHost] = useState("")
-  const [sapQasHost, setSapQasHost] = useState("")
+  const [wasDevHost, setWasDevHost] = useState('')
+  const [sapDevHost, setSapDevHost] = useState('')
+  const [sapQasHost, setSapQasHost] = useState('')
 
   const [newRule, setNewRule] = useState({
-    listenPort: "",
-    connectAddress: "",
-    connectPort: "",
+    listenPort: '',
+    connectAddress: '',
+    connectPort: ''
   })
 
-  const [pasteText, setPasteText] = useState("")
+  const [pasteText, setPasteText] = useState('')
 
   // 실제 Windows netsh에서 규칙 조회
   const loadRules = async () => {
@@ -41,11 +41,11 @@ export default function PortProxyPage() {
       if (result.success && result.rules) {
         setRules(result.rules)
       } else {
-        toast.error(result.error || "규칙 조회에 실패했습니다.")
+        toast.error(result.error || '규칙 조회에 실패했습니다.')
         setRules([])
       }
     } catch (error) {
-      toast.error("규칙 조회 중 오류가 발생했습니다.")
+      toast.error('규칙 조회 중 오류가 발생했습니다.')
       console.error(error)
       setRules([])
     } finally {
@@ -56,15 +56,15 @@ export default function PortProxyPage() {
   // netsh 출력 형식으로 변환
   const formatRulesAsNetsh = (): string => {
     if (rules.length === 0) {
-      return "등록된 규칙이 없습니다."
+      return '등록된 규칙이 없습니다.'
     }
 
-    let output = "Listen on ipv4:             Connect to ipv4:\n\n"
-    output += "Address         Port        Address         Port\n"
-    output += "--------------- ----------  --------------- ----------\n"
+    let output = 'Listen on ipv4:             Connect to ipv4:\n\n'
+    output += 'Address         Port        Address         Port\n'
+    output += '--------------- ----------  --------------- ----------\n'
 
     rules.forEach((rule) => {
-      const listenAddr = "0.0.0.0".padEnd(15)
+      const listenAddr = '*'.padEnd(15)
       const listenPort = rule.listenPort.padEnd(11)
       const connectAddr = rule.connectAddress.padEnd(15)
       const connectPort = rule.connectPort
@@ -84,7 +84,7 @@ export default function PortProxyPage() {
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     // "current" 탭으로 이동 시 규칙 새로고침
-    if (value === "current") {
+    if (value === 'current') {
       loadRules()
     }
   }
@@ -92,120 +92,102 @@ export default function PortProxyPage() {
   // WAS Dev 프리셋 추가 (80, 443, 8082)
   const addWasDevRules = async () => {
     if (!wasDevHost.trim()) {
-      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      toast.warning('IP 또는 호스트네임을 입력해주세요.')
       return
     }
 
-    const addRulesPromise = async () => {
+    try {
       const ports = [
-        { listen: "80", connect: "80" },
-        { listen: "443", connect: "443" },
-        { listen: "8082", connect: "8082" },
+        { listen: '80', connect: '80' },
+        { listen: '443', connect: '443' },
+        { listen: '8082', connect: '8082' }
       ]
 
       for (const port of ports) {
-        const result = await window.api.portproxy.addRule(
-          port.listen,
-          wasDevHost.trim(),
-          port.connect
-        )
+        const result = await window.api.portproxy.addRule(port.listen, wasDevHost.trim(), port.connect)
         if (!result.success) {
-          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          return
         }
       }
 
-      setWasDevHost("")
+      setWasDevHost('')
       await loadRules()
-      return { count: 3 }
+      toast.success(`WAS Dev 규칙 ${ports.length}개가 추가되었습니다.`)
+    } catch (error) {
+      toast.error('WAS Dev 규칙 추가 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(addRulesPromise(), {
-      loading: "WAS Dev 규칙을 추가하는 중...",
-      success: (data) => `WAS Dev 규칙 ${data.count}개가 추가되었습니다.`,
-      error: (err) => err.message || "WAS Dev 규칙 추가에 실패했습니다.",
-    })
   }
 
   // SAP Dev 프리셋 추가 (3200, 3300)
   const addSapDevRules = async () => {
     if (!sapDevHost.trim()) {
-      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      toast.warning('IP 또는 호스트네임을 입력해주세요.')
       return
     }
 
-    const addRulesPromise = async () => {
+    try {
       const ports = [
-        { listen: "3200", connect: "3200" },
-        { listen: "3300", connect: "3300" },
+        { listen: '3200', connect: '3200' },
+        { listen: '3300', connect: '3300' }
       ]
 
       for (const port of ports) {
-        const result = await window.api.portproxy.addRule(
-          port.listen,
-          sapDevHost.trim(),
-          port.connect
-        )
+        const result = await window.api.portproxy.addRule(port.listen, sapDevHost.trim(), port.connect)
         if (!result.success) {
-          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          return
         }
       }
 
-      setSapDevHost("")
+      setSapDevHost('')
       await loadRules()
-      return { count: 2 }
+      toast.success(`SAP Dev 규칙 ${ports.length}개가 추가되었습니다.`)
+    } catch (error) {
+      toast.error('SAP Dev 규칙 추가 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(addRulesPromise(), {
-      loading: "SAP Dev 규칙을 추가하는 중...",
-      success: (data) => `SAP Dev 규칙 ${data.count}개가 추가되었습니다.`,
-      error: (err) => err.message || "SAP Dev 규칙 추가에 실패했습니다.",
-    })
   }
 
   // SAP QAS 프리셋 추가 (3201→3200, 3301→3300)
   const addSapQasRules = async () => {
     if (!sapQasHost.trim()) {
-      toast.warning("IP 또는 호스트네임을 입력해주세요.")
+      toast.warning('IP 또는 호스트네임을 입력해주세요.')
       return
     }
 
-    const addRulesPromise = async () => {
+    try {
       const ports = [
-        { listen: "3201", connect: "3200" },
-        { listen: "3301", connect: "3300" },
+        { listen: '3201', connect: '3200' },
+        { listen: '3301', connect: '3300' }
       ]
 
       for (const port of ports) {
-        const result = await window.api.portproxy.addRule(
-          port.listen,
-          sapQasHost.trim(),
-          port.connect
-        )
+        const result = await window.api.portproxy.addRule(port.listen, sapQasHost.trim(), port.connect)
         if (!result.success) {
-          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
+          return
         }
       }
 
-      setSapQasHost("")
+      setSapQasHost('')
       await loadRules()
-      return { count: 2 }
+      toast.success(`SAP QAS 규칙 ${ports.length}개가 추가되었습니다.`)
+    } catch (error) {
+      toast.error('SAP QAS 규칙 추가 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(addRulesPromise(), {
-      loading: "SAP QAS 규칙을 추가하는 중...",
-      success: (data) => `SAP QAS 규칙 ${data.count}개가 추가되었습니다.`,
-      error: (err) => err.message || "SAP QAS 규칙 추가에 실패했습니다.",
-    })
   }
 
   // 커스텀 단일 규칙 추가
   const addCustomRule = async () => {
     if (!newRule.listenPort || !newRule.connectAddress || !newRule.connectPort) {
-      toast.warning("모든 필드를 입력해주세요.")
+      toast.warning('모든 필드를 입력해주세요.')
       return
     }
 
-    const addRulePromise = async () => {
+    try {
       const result = await window.api.portproxy.addRule(
         newRule.listenPort.trim(),
         newRule.connectAddress.trim(),
@@ -213,94 +195,84 @@ export default function PortProxyPage() {
       )
 
       if (!result.success) {
-        throw new Error(result.error || "규칙 추가에 실패했습니다.")
+        toast.error(result.error || '규칙 추가에 실패했습니다.')
+        return
       }
 
-      setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
+      setNewRule({ listenPort: '', connectAddress: '', connectPort: '' })
       await loadRules()
+      toast.success('규칙이 추가되었습니다.')
+    } catch (error) {
+      toast.error('규칙 추가 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(addRulePromise(), {
-      loading: "규칙을 추가하는 중...",
-      success: "규칙이 추가되었습니다.",
-      error: (err) => err.message || "규칙 추가에 실패했습니다.",
-    })
   }
 
   // netsh 출력 붙여넣기로 일괄 등록
   const addFromPaste = async () => {
     if (!pasteText.trim()) {
-      toast.warning("netsh 출력 내용을 붙여넣어주세요.")
+      toast.warning('netsh 출력 내용을 붙여넣어주세요.')
       return
     }
 
-    const lines = pasteText.split("\n")
+    const lines = pasteText.split('\n')
     const parsedRules: { listenPort: string; connectAddress: string; connectPort: string }[] = []
 
     lines.forEach((line) => {
       const trimmed = line.trim()
       const parts = trimmed.split(/\s+/)
-      // 0.0.0.0 포트 주소 포트 형식 파싱
+      // * 또는 0.0.0.0 포트 주소 포트 형식 파싱
       if (parts.length >= 4 && parts[1].match(/^\d+$/)) {
         parsedRules.push({
           listenPort: parts[1],
           connectAddress: parts[2],
-          connectPort: parts[3],
+          connectPort: parts[3]
         })
       }
     })
 
     if (parsedRules.length === 0) {
-      toast.warning("유효한 규칙을 찾을 수 없습니다.")
+      toast.warning('유효한 규칙을 찾을 수 없습니다.')
       return
     }
 
-    const addRulesPromise = async () => {
+    try {
       let successCount = 0
       for (const rule of parsedRules) {
-        const result = await window.api.portproxy.addRule(
-          rule.listenPort,
-          rule.connectAddress,
-          rule.connectPort
-        )
+        const result = await window.api.portproxy.addRule(rule.listenPort, rule.connectAddress, rule.connectPort)
         if (result.success) {
           successCount++
         }
       }
 
-      setPasteText("")
+      setPasteText('')
       await loadRules()
-      return { count: successCount, total: parsedRules.length }
+      toast.success(`${successCount}/${parsedRules.length}개의 규칙이 추가되었습니다.`)
+    } catch (error) {
+      toast.error('일괄 등록 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(addRulesPromise(), {
-      loading: `${parsedRules.length}개의 규칙을 추가하는 중...`,
-      success: (data) => `${data.count}/${data.total}개의 규칙이 추가되었습니다.`,
-      error: "일괄 등록 중 오류가 발생했습니다.",
-    })
   }
 
   // DNS 재연결 (모든 규칙 재적용)
   const reapplyRules = async () => {
     if (rules.length === 0) {
-      toast.warning("재적용할 규칙이 없습니다.")
+      toast.warning('재적용할 규칙이 없습니다.')
       return
     }
 
-    const reapplyPromise = async () => {
+    try {
       const result = await window.api.portproxy.applyRules(rules)
       if (!result.success) {
-        throw new Error(result.error || "규칙 재적용에 실패했습니다.")
+        toast.error(result.error || '규칙 재적용에 실패했습니다.')
+        return
       }
       await loadRules()
-      return { count: rules.length }
+      toast.success(`${rules.length}개의 규칙이 재적용되었습니다.`)
+    } catch (error) {
+      toast.error('규칙 재적용 중 오류가 발생했습니다.')
+      console.error(error)
     }
-
-    toast.promise(reapplyPromise(), {
-      loading: "모든 규칙을 재적용하는 중...",
-      success: (data) => `${data.count}개의 규칙이 재적용되었습니다.`,
-      error: (err) => err.message || "규칙 재적용에 실패했습니다.",
-    })
   }
 
   return (
@@ -423,8 +395,7 @@ export default function PortProxyPage() {
           <Card className="p-4">
             <h3 className="text-sm font-semibold text-foreground mb-2">netsh 출력 붙여넣기</h3>
             <p className="text-xs text-muted-foreground mb-3">
-              <code className="bg-muted px-1.5 py-0.5 rounded text-xs">netsh int portproxy show all</code> 결과를
-              붙여넣으세요.
+              <code className="bg-muted px-1.5 py-0.5 rounded text-xs">netsh int portproxy show all</code> 결과를 붙여넣으세요.
             </p>
             <Textarea
               placeholder="Listen on ipv4:             Connect to ipv4:&#10;&#10;Address         Port        Address         Port&#10;--------------- ----------  --------------- ----------&#10;0.0.0.0         8080        192.168.1.100   80"
@@ -448,8 +419,8 @@ export default function PortProxyPage() {
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-blue-900 mb-1.5">DNS 재연결이란?</h4>
                 <p className="text-xs text-blue-700 mb-3">
-                  서버 이중화나 DNS 변경으로 기존 연결이 끊겼을 때, 현재 등록된 모든 규칙을 다시 적용하여 연결을
-                  복구합니다. SAP 서버나 WAS가 페일오버되어 DNS가 변경된 경우 유용합니다.
+                  서버 이중화나 DNS 변경으로 기존 연결이 끊겼을 때, 현재 등록된 모든 규칙을 다시 적용하여 연결을 복구합니다. SAP 서버나
+                  WAS가 페일오버되어 DNS가 변경된 경우 유용합니다.
                 </p>
                 <Button onClick={reapplyRules} disabled={rules.length === 0 || loading} size="sm" className="h-9 w-full">
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -461,9 +432,7 @@ export default function PortProxyPage() {
 
           <h3 className="text-sm font-semibold text-foreground mb-3">
             등록된 규칙 ({rules.length})
-            <span className="text-xs text-muted-foreground ml-2 font-normal">
-              (netsh interface portproxy show all)
-            </span>
+            <span className="text-xs text-muted-foreground ml-2 font-normal">(netsh interface portproxy show all)</span>
           </h3>
           {loading ? (
             <Card className="p-6 text-center">

@@ -21,14 +21,14 @@ const api = {
   bookmark: {
     add: (stage: string, name: string, url: string) => ipcRenderer.invoke('bookmark:add', stage, name, url),
     addAuto: (stage: string, ip: string) => ipcRenderer.invoke('bookmark:addAuto', stage, ip),
-    get: (stage: string) => ipcRenderer.invoke('bookmark:get', stage),
+    get: (stage: string) => ipcRenderer.invoke('bookmark:get', stage)
   },
   // 💡 OTP API 추가
   otp: {
     getAccounts: () => ipcRenderer.invoke('otp:getAccounts'),
     addAccount: (alias: string, key: string) => ipcRenderer.invoke('otp:addAccount', alias, key),
     deleteAccount: (id: string) => ipcRenderer.invoke('otp:deleteAccount', id),
-    getRefreshTime: () => ipcRenderer.invoke('otp:getRefreshTime'),
+    getRefreshTime: () => ipcRenderer.invoke('otp:getRefreshTime')
   },
   // 💡 PortProxy API 추가
   portproxy: {
@@ -37,7 +37,7 @@ const api = {
       ipcRenderer.invoke('portproxy:addRule', listenPort, connectAddress, connectPort),
     deleteRule: (listenPort: string) => ipcRenderer.invoke('portproxy:deleteRule', listenPort),
     deleteAll: () => ipcRenderer.invoke('portproxy:deleteAll'),
-    applyRules: (rules: any[]) => ipcRenderer.invoke('portproxy:applyRules', rules),
+    applyRules: (rules: any[]) => ipcRenderer.invoke('portproxy:applyRules', rules)
   },
   system: {
     restart: () => ipcRenderer.invoke('system:restart')

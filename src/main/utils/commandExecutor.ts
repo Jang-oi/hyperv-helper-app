@@ -58,7 +58,9 @@ export class CommandExecutor {
    */
   static async isAdmin(): Promise<boolean> {
     try {
-      const result = await this.executePowerShell('([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)')
+      const result = await this.executePowerShell(
+        '([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)'
+      )
       return result.stdout === 'True'
     } catch {
       return false

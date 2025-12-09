@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react"
-import { Check, ChevronDown, Copy, Plus, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, Copy, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner' // toast 임포트 추가 (오류 메시지 표시용)
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface OTPAccount {
   id: string
@@ -25,8 +25,8 @@ export default function OTPPage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  const [newAlias, setNewAlias] = useState("")
-  const [newKey, setNewKey] = useState("")
+  const [newAlias, setNewAlias] = useState('')
+  const [newKey, setNewKey] = useState('')
 
   // ---------------------------------------------------
   // 데이터 로드 및 갱신 로직 (IPC 사용)
@@ -34,37 +34,36 @@ export default function OTPPage() {
   const loadAccountsAndSyncTime = async () => {
     try {
       // 1. IPC를 통해 계정 목록과 현재 코드를 불러옴
-      const result = await window.api.otp.getAccounts();
+      const result = await window.api.otp.getAccounts()
       if (result.success && result.accounts) {
-        setAccounts(result.accounts);
+        setAccounts(result.accounts)
       } else {
-        toast.error(result.error || 'OTP 계정 로드에 실패했습니다.');
-        setAccounts([]); // 실패 시 목록 비우기
+        toast.error(result.error || 'OTP 계정 로드에 실패했습니다.')
+        setAccounts([]) // 실패 시 목록 비우기
       }
 
       // 2. 남은 시간 정보를 IPC 핸들러에서 가져와 동기화
-      const timeResult = await window.api.otp.getRefreshTime();
+      const timeResult = await window.api.otp.getRefreshTime()
       if (timeResult.success && timeResult.timeLeft) {
-        setTimeLeft(timeResult.timeLeft);
+        setTimeLeft(timeResult.timeLeft)
       }
     } catch (error) {
-      console.error('Failed to load OTP accounts:', error);
-      toast.error('IPC 통신 오류: OTP 데이터를 가져올 수 없습니다.');
+      console.error('Failed to load OTP accounts:', error)
+      toast.error('IPC 통신 오류: OTP 데이터를 가져올 수 없습니다.')
     }
-  };
-
+  }
 
   useEffect(() => {
     // 1. 최초 로드 및 시간 동기화
-    loadAccountsAndSyncTime();
+    loadAccountsAndSyncTime()
 
     // 2. 1초마다 남은 시간 갱신 타이머
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           // 30초 주기가 끝날 때 메인 프로세스에서 코드를 갱신
-          loadAccountsAndSyncTime();
-          return 30; // 타이머를 30으로 초기화
+          loadAccountsAndSyncTime()
+          return 30 // 타이머를 30으로 초기화
         }
         return prev - 1
       })
@@ -75,7 +74,7 @@ export default function OTPPage() {
 
   useEffect(() => {
     const checkScroll = () => {
-      const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+      const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
       if (scrollElement) {
         const hasScroll = scrollElement.scrollHeight > scrollElement.clientHeight
         setShowScrollIndicator(hasScroll)
@@ -93,17 +92,17 @@ export default function OTPPage() {
   const handleAddAccount = async () => {
     if (newAlias && newKey) {
       // IPC 호출
-      const result = await (window as any).api.otp.addAccount(newAlias, newKey);
+      const result = await (window as any).api.otp.addAccount(newAlias, newKey)
 
       if (result.success && result.account) {
         // 성공 시 목록에 추가하고 상태 초기화
-        setAccounts([...accounts, result.account]);
-        setNewAlias("");
-        setNewKey("");
-        toast.success(`'${newAlias}' 계정이 추가되었습니다.`);
+        setAccounts([...accounts, result.account])
+        setNewAlias('')
+        setNewKey('')
+        toast.success(`'${newAlias}' 계정이 추가되었습니다.`)
       } else {
         // 오류 처리 (예: 유효하지 않은 키)
-        toast.error(result.error || '계정 추가에 실패했습니다.');
+        toast.error(result.error || '계정 추가에 실패했습니다.')
       }
     }
   }
@@ -113,13 +112,13 @@ export default function OTPPage() {
   // ---------------------------------------------------
   const handleDeleteAccount = async (id: string) => {
     // IPC 호출
-    const result = await (window as any).api.otp.deleteAccount(id);
+    const result = await (window as any).api.otp.deleteAccount(id)
 
     if (result.success) {
-      setAccounts(accounts.filter((account) => account.id !== id));
-      toast.success('계정이 삭제되었습니다.');
+      setAccounts(accounts.filter((account) => account.id !== id))
+      toast.success('계정이 삭제되었습니다.')
     } else {
-      toast.error(result.error || '계정 삭제에 실패했습니다.');
+      toast.error(result.error || '계정 삭제에 실패했습니다.')
     }
   }
 
@@ -171,18 +170,9 @@ export default function OTPPage() {
                               className="h-7 w-7 p-0"
                               onClick={() => copyToClipboard(account.code, account.id)}
                             >
-                              {copiedId === account.id ? (
-                                <Check className="w-4 h-4 text-primary" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
+                              {copiedId === account.id ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0"
-                              onClick={() => handleDeleteAccount(account.id)}
-                            >
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteAccount(account.id)}>
                               <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>

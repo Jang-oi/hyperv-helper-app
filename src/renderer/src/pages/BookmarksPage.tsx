@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react"
-import { ExternalLink, FolderOpen, Edit3 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { toast } from "sonner"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useEffect, useState } from 'react'
+import { Edit3, ExternalLink, FolderOpen } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface BookmarkItem {
   id: string
@@ -15,19 +15,19 @@ interface BookmarkItem {
   url: string
 }
 
-const STAGES = ["DEV", "QAS", "PRD"]
+const STAGES = ['DEV', 'QAS', 'PRD']
 
 export default function BookmarksPage() {
-  const [stage, setStage] = useState<string>("DEV")
-  const [name, setName] = useState<string>("") // 북마크 이름 추가 입력 필드
-  const [wasUrl, setWasUrl] = useState<string>("")
-  const [autoAddIp, setAutoAddIp] = useState<string>("")
-  const [addMode, setAddMode] = useState<"auto" | "manual">("auto")
+  const [stage, setStage] = useState<string>('DEV')
+  const [name, setName] = useState<string>('') // 북마크 이름 추가 입력 필드
+  const [wasUrl, setWasUrl] = useState<string>('')
+  const [autoAddIp, setAutoAddIp] = useState<string>('')
+  const [addMode, setAddMode] = useState<'auto' | 'manual'>('auto')
 
   const [bookmarks, setBookmarks] = useState<Record<string, BookmarkItem[]>>({
     DEV: [],
     QAS: [],
-    PRD: [],
+    PRD: []
   })
   const [loading, setLoading] = useState(false)
 
@@ -56,12 +56,12 @@ export default function BookmarksPage() {
       setBookmarks(newBookmarks)
 
       if (hasError) {
-        toast.error("일부 북마크 스테이지를 로드하는 데 실패했습니다.")
+        toast.error('일부 북마크 스테이지를 로드하는 데 실패했습니다.')
       } else {
-        console.log("북마크 로드 완료")
+        console.log('북마크 로드 완료')
       }
     } catch (e) {
-      toast.error("IPC 통신 오류: 북마크 데이터를 가져올 수 없습니다.")
+      toast.error('IPC 통신 오류: 북마크 데이터를 가져올 수 없습니다.')
       console.error(e)
     } finally {
       setLoading(false)
@@ -74,7 +74,7 @@ export default function BookmarksPage() {
   const addManualBookmark = async () => {
     // name, wasUrl 사용 (기존 로직 유지)
     if (!name.trim() || !wasUrl.trim()) {
-      toast.warning("북마크 이름과 URL을 모두 입력해주세요.")
+      toast.warning('북마크 이름과 URL을 모두 입력해주세요.')
       return
     }
 
@@ -85,14 +85,14 @@ export default function BookmarksPage() {
 
       if (result && result.success) {
         toast.success(`'${name}' 북마크가 [${stage}] 환경에 수동으로 추가되었습니다.`)
-        setName("")
-        setWasUrl("")
+        setName('')
+        setWasUrl('')
         await loadBookmarks()
       } else {
-        toast.error(result?.error || "북마크 추가에 실패했습니다.")
+        toast.error(result?.error || '북마크 추가에 실패했습니다.')
       }
     } catch (e) {
-      toast.error("IPC 통신 오류: 북마크 추가에 실패했습니다.")
+      toast.error('IPC 통신 오류: 북마크 추가에 실패했습니다.')
       console.error(e)
     } finally {
       setLoading(false)
@@ -104,7 +104,7 @@ export default function BookmarksPage() {
   // ---------------------------------------------------
   const addAutoBookmarks = async () => {
     if (!autoAddIp.trim()) {
-      toast.warning("WAS IP 또는 도메인을 입력해주세요.")
+      toast.warning('WAS IP 또는 도메인을 입력해주세요.')
       return
     }
 
@@ -116,13 +116,13 @@ export default function BookmarksPage() {
 
       if (result && result.success) {
         toast.success(`[${stage}] 환경에 2개의 WAS 북마크가 자동으로 추가되었습니다.`)
-        setAutoAddIp("")
+        setAutoAddIp('')
         await loadBookmarks()
       } else {
-        toast.error(result?.error || "자동 북마크 추가에 실패했습니다. (유효하지 않은 IP일 수 있습니다.)")
+        toast.error(result?.error || '자동 북마크 추가에 실패했습니다. (유효하지 않은 IP일 수 있습니다.)')
       }
     } catch (e) {
-      toast.error("IPC 통신 오류: 자동 북마크 추가에 실패했습니다.")
+      toast.error('IPC 통신 오류: 자동 북마크 추가에 실패했습니다.')
       console.error(e)
     } finally {
       setLoading(false)
@@ -133,7 +133,7 @@ export default function BookmarksPage() {
   }, []) // 최초 1회만 로드
 
   const openBookmark = (url: string) => {
-    window.open(url, "_blank")
+    window.open(url, '_blank')
   }
 
   return (
@@ -150,11 +150,7 @@ export default function BookmarksPage() {
           <Card className="p-5">
             <div className="mb-5">
               <label className="text-sm font-semibold text-foreground mb-3 block">추가 방식 선택</label>
-              <RadioGroup
-                value={addMode}
-                onValueChange={(value) => setAddMode(value as "auto" | "manual")}
-                className="flex gap-4"
-              >
+              <RadioGroup value={addMode} onValueChange={(value) => setAddMode(value as 'auto' | 'manual')} className="flex gap-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="auto" id="auto" />
                   <label htmlFor="auto" className="text-sm font-medium cursor-pointer flex items-center gap-1.5">
@@ -191,7 +187,7 @@ export default function BookmarksPage() {
                 </Select>
               </div>
 
-              {addMode === "auto" ? (
+              {addMode === 'auto' ? (
                 <>
                   {/* 자동 추가 모드 */}
                   <div className="space-y-1.5">
@@ -204,16 +200,9 @@ export default function BookmarksPage() {
                       onChange={(e) => setAutoAddIp(e.target.value)}
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      자동으로 80번(HTTP), 8082번(Jenkins) 포트 북마크가 생성됩니다.
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">자동으로 80번(HTTP), 8082번(Jenkins) 포트 북마크가 생성됩니다.</p>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={addAutoBookmarks}
-                    className="w-full h-9 mt-2"
-                    disabled={loading || !autoAddIp.trim()}
-                  >
+                  <Button size="sm" onClick={addAutoBookmarks} className="w-full h-9 mt-2" disabled={loading || !autoAddIp.trim()}>
                     자동 북마크 추가
                   </Button>
                 </>

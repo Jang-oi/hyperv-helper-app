@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-const STORE_KEY_PREFIX = 'notepad';
+const STORE_KEY_PREFIX = 'notepad'
 
 /**
  * Notepad IPC Handler

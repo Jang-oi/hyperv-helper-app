@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { ipcMain } from 'electron'
 
 const execAsync = promisify(exec)
 
@@ -54,8 +54,6 @@ export function registerPortProxyHandlers(): void {
         if (isDataSection && trimmed.length > 0) {
           const parts = trimmed.split(/\s+/)
           if (parts.length >= 4) {
-            // 0.0.0.0을 *로 표시하거나 그대로 사용
-            const listenAddress = parts[0] === '0.0.0.0' ? '*' : parts[0]
             rules.push({
               id: `${parts[1]}-${parts[2]}-${parts[3]}-${Date.now()}`, // 고유 ID 생성
               listenPort: parts[1],
@@ -82,12 +80,7 @@ export function registerPortProxyHandlers(): void {
   // 단일 portproxy 규칙 추가
   ipcMain.handle(
     'portproxy:addRule',
-    async (
-      _event,
-      listenPort: string,
-      connectAddress: string,
-      connectPort: string
-    ): Promise<PortProxyResult> => {
+    async (_event, listenPort: string, connectAddress: string, connectPort: string): Promise<PortProxyResult> => {
       try {
         // 입력 검증
         if (!listenPort || !connectAddress || !connectPort) {
@@ -115,7 +108,7 @@ export function registerPortProxyHandlers(): void {
         }
 
         // netsh 명령 실행
-        const command = `netsh interface portproxy add v4tov4 listenport=${listenPort} listenaddress=0.0.0.0 connectport=${connectPort} connectaddress=${connectAddress}`
+        const command = `netsh interface portproxy add v4tov4 listenport=${listenPort} listenaddress=* connectport=${connectPort} connectaddress=${connectAddress}`
 
         await execAsync(command)
 
@@ -132,32 +125,29 @@ export function registerPortProxyHandlers(): void {
   )
 
   // 단일 portproxy 규칙 삭제
-  ipcMain.handle(
-    'portproxy:deleteRule',
-    async (_event, listenPort: string): Promise<PortProxyResult> => {
-      try {
-        if (!listenPort) {
-          return {
-            success: false,
-            error: '리슨 포트를 지정해야 합니다.'
-          }
-        }
-
-        const command = `netsh interface portproxy delete v4tov4 listenport=${listenPort} listenaddress=0.0.0.0`
-
-        await execAsync(command)
-
-        return {
-          success: true
-        }
-      } catch (error) {
+  ipcMain.handle('portproxy:deleteRule', async (_event, listenPort: string): Promise<PortProxyResult> => {
+    try {
+      if (!listenPort) {
         return {
           success: false,
-          error: `PortProxy 규칙 삭제에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+          error: '리슨 포트를 지정해야 합니다.'
         }
       }
+
+      const command = `netsh interface portproxy delete v4tov4 listenport=${listenPort} listenaddress=*`
+
+      await execAsync(command)
+
+      return {
+        success: true
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: `PortProxy 규칙 삭제에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+      }
     }
-  )
+  })
 
   // 모든 portproxy 규칙 삭제
   ipcMain.handle('portproxy:deleteAll', async (): Promise<PortProxyResult> => {
@@ -185,7 +175,7 @@ export function registerPortProxyHandlers(): void {
 
       // 2. 새로운 규칙들 추가
       for (const rule of rules) {
-        const command = `netsh interface portproxy add v4tov4 listenport=${rule.listenPort} listenaddress=0.0.0.0 connectport=${rule.connectPort} connectaddress=${rule.connectAddress}`
+        const command = `netsh interface portproxy add v4tov4 listenport=${rule.listenPort} listenaddress=* connectport=${rule.connectPort} connectaddress=${rule.connectAddress}`
         await execAsync(command)
       }
 

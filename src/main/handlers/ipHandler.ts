@@ -1,8 +1,8 @@
 // ipHandler.ts 파일
 
-import { ipcMain } from 'electron'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { ipcMain } from 'electron'
 import { Validator } from '../utils/validator'
 
 const execAsync = promisify(exec)
@@ -58,7 +58,7 @@ export function registerIPHandlers(): void {
       const adaptersData = JSON.parse(stdout.trim())
 
       // JSON이 단일 객체일 경우 배열로 변환
-      const rawAdapters = Array.isArray(adaptersData) ? adaptersData : [adaptersData].filter(a => a.InterfaceAlias)
+      const rawAdapters = Array.isArray(adaptersData) ? adaptersData : [adaptersData].filter((a) => a.InterfaceAlias)
 
       // Alias를 name으로, Index를 index로 매핑 (중복 Index 제거)
       const uniqueAdapters = new Map<number, NetworkAdapter>()
@@ -90,7 +90,7 @@ export function registerIPHandlers(): void {
         adapters: result
       }
     } catch (error) {
-      console.error('Adapter loading failed:', error);
+      console.error('Adapter loading failed:', error)
       return {
         success: false,
         error: '네트워크 어댑터 조회에 실패했습니다.',
@@ -102,20 +102,20 @@ export function registerIPHandlers(): void {
   // 현재 IP 설정 조회 (오류 발생 시 빈 값으로 처리하도록 try/catch 블록 추가)
   ipcMain.handle('ip:getCurrentConfig', async (_event, adapterIndex: number): Promise<IPResult> => {
     // 기본값 초기화
-    let ipRawData: any = {};
-    let actualGateway = '';
-    let dnsData: any = { ServerAddresses: [] };
+    let ipRawData: any = {}
+    let actualGateway = ''
+    let dnsData: any = { ServerAddresses: [] }
 
     // 1. IP 주소 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
     try {
       const ipCommand = `powershell -Command "Get-NetIPAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object IPAddress, PrefixLength | ConvertTo-Json"`
       const { stdout } = await execAsync(ipCommand)
-      const ipData = stdout.trim() ? JSON.parse(stdout.trim()) : [];
+      const ipData = stdout.trim() ? JSON.parse(stdout.trim()) : []
 
       // IP 주소 데이터가 배열일 경우 (여러 개 할당된 경우 첫 번째 사용)
-      ipRawData = Array.isArray(ipData) ? ipData.find(d => d.IPAddress) : ipData;
+      ipRawData = Array.isArray(ipData) ? ipData.find((d) => d.IPAddress) : ipData
     } catch (e) {
-      console.log(`[Index ${adapterIndex}] IP lookup failed, proceeding with empty data.`);
+      console.log(`[Index ${adapterIndex}] IP lookup failed, proceeding with empty data.`)
     }
 
     // 2. 게이트웨이 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
@@ -124,14 +124,14 @@ export function registerIPHandlers(): void {
       const { stdout: gatewayStdout } = await execAsync(gatewayCommand)
 
       // 출력된 JSON이 비어있을 수 있음
-      const gatewayRawData = gatewayStdout.trim() ? JSON.parse(gatewayStdout.trim()) : [];
+      const gatewayRawData = gatewayStdout.trim() ? JSON.parse(gatewayStdout.trim()) : []
 
-      const gatewayData = Array.isArray(gatewayRawData) ? gatewayRawData : [gatewayRawData];
+      const gatewayData = Array.isArray(gatewayRawData) ? gatewayRawData : [gatewayRawData]
 
       // NextHop이 0.0.0.0이 아닌 게이트웨이를 찾습니다.
-      actualGateway = gatewayData.find((route: any) => route.NextHop && route.NextHop !== '0.0.0.0')?.NextHop || '';
+      actualGateway = gatewayData.find((route: any) => route.NextHop && route.NextHop !== '0.0.0.0')?.NextHop || ''
     } catch (e) {
-      console.log(`[Index ${adapterIndex}] Gateway lookup failed, proceeding with empty data.`);
+      console.log(`[Index ${adapterIndex}] Gateway lookup failed, proceeding with empty data.`)
     }
 
     // 3. DNS 서버 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
@@ -140,9 +140,9 @@ export function registerIPHandlers(): void {
       const { stdout: dnsStdout } = await execAsync(dnsCommand)
 
       // 출력된 JSON이 비어있을 수 있음
-      dnsData = dnsStdout.trim() ? JSON.parse(dnsStdout.trim()) : { ServerAddresses: [] };
+      dnsData = dnsStdout.trim() ? JSON.parse(dnsStdout.trim()) : { ServerAddresses: [] }
     } catch (e) {
-      console.log(`[Index ${adapterIndex}] DNS lookup failed, proceeding with empty data.`);
+      console.log(`[Index ${adapterIndex}] DNS lookup failed, proceeding with empty data.`)
     }
 
     // 최종 설정 객체 생성

@@ -1,7 +1,7 @@
-import { registerNotepadHandlers } from './notepadHandler'
+import { registerBookmarksHandlers } from './bookmarkHandler'
 import { registerHostnameHandlers } from './hostnameHandler'
 import { registerIPHandlers } from './ipHandler'
-import { registerBookmarksHandlers } from './bookmarkHandler'
+import { registerNotepadHandlers } from './notepadHandler'
 import { registerOTPHandlers } from './otpHandler'
 import { registerPortProxyHandlers } from './portProxyHandler'
 
