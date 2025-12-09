@@ -1,8 +1,14 @@
 import { electronAPI } from '@electron-toolkit/preload'
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  notepad: {
+    load: (noteId: string): Promise<string> => ipcRenderer.invoke('notepad:load', noteId),
+    save: (noteId: string, content: string): Promise<boolean> => ipcRenderer.invoke('notepad:save', noteId, content),
+    loadAll: (): Promise<Record<string, string>> => ipcRenderer.invoke('notepad:loadAll')
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -17,14 +17,32 @@ export default function NotepadPage() {
     'note-5': ''
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>, noteId: string) => {
+  // 초기 로드: 저장된 모든 메모 불러오기
+  useEffect(() => {
+    const loadNotes = async () => {
+      try {
+        const savedNotes = await window.api.notepad.loadAll()
+        setNoteContents(savedNotes)
+      } catch (error) {
+        console.error('Failed to load notes:', error)
+      }
+    }
+    loadNotes()
+  }, [])
+
+  const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>, noteId: string) => {
     const newContent = e.target.value
     setNoteContents((prev) => ({
       ...prev,
       [noteId]: newContent
     }))
-    // electron-store auto-save would happen here
-    console.log(`[v0] Auto-saving ${noteId} to electron-store`)
+
+    // electron-store에 자동 저장
+    try {
+      await window.api.notepad.save(noteId, newContent)
+    } catch (error) {
+      console.error(`Failed to save ${noteId}:`, error)
+    }
   }
 
   const currentContent = noteContents[activeTab]

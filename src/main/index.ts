@@ -1,6 +1,10 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import Store from 'electron-store'
+
+// electron-store 초기화
+const store = new Store()
 
 export const uniIcon = is.dev
   ? join(__dirname, '../../build/icon.ico') // 개발 환경 경로
@@ -56,6 +60,25 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // Notepad IPC handlers
+  ipcMain.handle('notepad:load', (_event, noteId: string) => {
+    return store.get(`notepad.${noteId}`, '')
+  })
+
+  ipcMain.handle('notepad:save', (_event, noteId: string, content: string) => {
+    store.set(`notepad.${noteId}`, content)
+    return true
+  })
+
+  ipcMain.handle('notepad:loadAll', () => {
+    const notes: Record<string, string> = {}
+    for (let i = 1; i <= 5; i++) {
+      const noteId = `note-${i}`
+      notes[noteId] = store.get(`notepad.${noteId}`, '') as string
+    }
+    return notes
+  })
 
   createWindow()
 
