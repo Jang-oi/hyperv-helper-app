@@ -28,16 +28,29 @@ export interface IPResult {
 }
 
 /**
+ * Prefix Length를 서브넷 마스크로 변환하는 헬퍼 함수
+ */
+function prefixToSubnet(prefix: number): string {
+  const mask = []
+  for (let i = 0; i < 4; i++) {
+    const n = Math.min(prefix, 8)
+    mask.push(256 - Math.pow(2, 8 - n))
+    prefix -= n
+  }
+  return mask.join('.')
+}
+
+/**
  * IP 변경 관련 IPC 핸들러 등록
  */
 export function registerIPHandlers(): void {
-  // 네트워크 어댑터 목록 조회 (이더넷으로 시작하는 어댑터 찾기)
+  // 네트워크 어댑터 목록 조회 (이더넷 또는 Ethernet으로 시작하는 어댑터 찾기)
   ipcMain.handle('ip:getAdapters', async (): Promise<IPResult> => {
     try {
       const command =
-        'powershell -Command "Get-NetAdapter | Where-Object {$_.Name -like \'이더넷*\'} | Select-Object Name, InterfaceIndex, InterfaceDescription | ConvertTo-Json"'
+        'powershell -NoProfile -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-NetAdapter | Where-Object {$_.Name -like \'이더넷*\' -or $_.Name -like \'Ethernet*\'} | Select-Object Name, InterfaceIndex, InterfaceDescription | ConvertTo-Json"'
 
-      const { stdout } = await execAsync(command)
+      const { stdout } = await execAsync(command, { encoding: 'utf8' })
       const adaptersData = JSON.parse(stdout.trim())
 
       // 단일 어댑터인 경우 배열로 변환
@@ -82,7 +95,7 @@ export function registerIPHandlers(): void {
 
       const currentConfig: IPConfig = {
         ip: ipData.IPAddress || '',
-        subnet: ipData.PrefixLength ? this.prefixToSubnet(ipData.PrefixLength) : '255.255.255.0',
+        subnet: ipData.PrefixLength ? prefixToSubnet(ipData.PrefixLength) : '255.255.255.0',
         gateway: gatewayData.NextHop || '',
         dns1: dnsData.ServerAddresses?.[0] || '',
         dns2: dnsData.ServerAddresses?.[1] || ''
@@ -126,9 +139,6 @@ export function registerIPHandlers(): void {
         }
       }
 
-      // IP 주소 설정
-      const ipCommand = `powershell -Command "New-NetIPAddress -InterfaceAlias '${adapterName}' -IPAddress '${config.ip}' -PrefixLength 24 -DefaultGateway '${config.gateway}' -ErrorAction Stop"`
-
       // 기존 IP 제거 후 새 IP 설정
       try {
         await execAsync(
@@ -141,6 +151,8 @@ export function registerIPHandlers(): void {
         // 기존 설정이 없을 수 있으므로 에러 무시
       }
 
+      // IP 주소 설정
+      const ipCommand = `powershell -Command "New-NetIPAddress -InterfaceAlias '${adapterName}' -IPAddress '${config.ip}' -PrefixLength 24 -DefaultGateway '${config.gateway}' -ErrorAction Stop"`
       await execAsync(ipCommand)
 
       // DNS 서버 설정
@@ -160,45 +172,4 @@ export function registerIPHandlers(): void {
     }
   })
 
-  // DHCP로 변경
-  ipcMain.handle('ip:setDHCP', async (_event, adapterName: string): Promise<IPResult> => {
-    try {
-      // 기존 정적 IP 제거
-      await execAsync(
-        `powershell -Command "Remove-NetIPAddress -InterfaceAlias '${adapterName}' -Confirm:$false -ErrorAction SilentlyContinue"`
-      )
-      await execAsync(
-        `powershell -Command "Remove-NetRoute -InterfaceAlias '${adapterName}' -DestinationPrefix '0.0.0.0/0' -Confirm:$false -ErrorAction SilentlyContinue"`
-      )
-
-      // DHCP 활성화
-      await execAsync(`powershell -Command "Set-NetIPInterface -InterfaceAlias '${adapterName}' -Dhcp Enabled"`)
-
-      // DNS도 DHCP로 설정
-      await execAsync(
-        `powershell -Command "Set-DnsClientServerAddress -InterfaceAlias '${adapterName}' -ResetServerAddresses"`
-      )
-
-      return {
-        success: true,
-        message: 'DHCP로 변경되었습니다.'
-      }
-    } catch (error: any) {
-      return {
-        success: false,
-        error: `DHCP 설정 실패: ${error.message || '알 수 없는 오류'}`
-      }
-    }
-  })
-}
-
-// Prefix Length를 서브넷 마스크로 변환하는 헬퍼 함수
-function prefixToSubnet(prefix: number): string {
-  const mask = []
-  for (let i = 0; i < 4; i++) {
-    const n = Math.min(prefix, 8)
-    mask.push(256 - Math.pow(2, 8 - n))
-    prefix -= n
-  }
-  return mask.join('.')
 }

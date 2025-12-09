@@ -15,8 +15,7 @@ const api = {
   ip: {
     getAdapters: () => ipcRenderer.invoke('ip:getAdapters'),
     getCurrentConfig: (adapterName: string) => ipcRenderer.invoke('ip:getCurrentConfig', adapterName),
-    setConfig: (adapterName: string, config: any) => ipcRenderer.invoke('ip:setConfig', adapterName, config),
-    setDHCP: (adapterName: string) => ipcRenderer.invoke('ip:setDHCP', adapterName)
+    setConfig: (adapterName: string, config: any) => ipcRenderer.invoke('ip:setConfig', adapterName, config)
   },
   system: {
     restart: () => ipcRenderer.invoke('system:restart')

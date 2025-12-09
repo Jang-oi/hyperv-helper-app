@@ -110,32 +110,6 @@ export default function IPChangePage() {
     }
   }
 
-  // DHCP로 변경
-  const handleDHCP = async () => {
-    if (!selectedAdapter) {
-      toast.error('네트워크 어댑터를 선택해주세요.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const result = await window.api.ip.setDHCP(selectedAdapter)
-
-      if (result.success) {
-        toast.success('DHCP로 변경되었습니다.')
-        // 현재 설정 다시 로드
-        await loadCurrentConfig(selectedAdapter)
-      } else {
-        toast.error(result.error || 'DHCP 설정에 실패했습니다.')
-      }
-    } catch (error) {
-      console.error('Failed to set DHCP:', error)
-      toast.error('오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (loadingAdapters) {
     return (
@@ -235,15 +209,10 @@ export default function IPChangePage() {
             <Input type="text" placeholder="8.8.8.8" value={dns2} onChange={(e) => setDns2(e.target.value)} disabled={loading} />
           </div>
 
-          {/* 버튼 그룹 */}
-          <div className="flex gap-2">
-            <Button onClick={handleSubmit} className="flex-1" disabled={!ipAddress || loading}>
-              {loading ? '설정 중...' : 'IP 설정 적용'}
-            </Button>
-            <Button onClick={handleDHCP} variant="outline" disabled={loading}>
-              DHCP
-            </Button>
-          </div>
+          {/* 적용 버튼 */}
+          <Button onClick={handleSubmit} className="w-full" disabled={!ipAddress || loading}>
+            {loading ? '설정 중...' : 'IP 설정 적용'}
+          </Button>
 
           <p className="text-xs text-muted-foreground">⚠️ 관리자 권한이 필요한 작업입니다.</p>
         </div>
