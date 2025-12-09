@@ -45,8 +45,6 @@ export default function NotepadPage() {
     }
   }
 
-  const currentContent = noteContents[activeTab]
-
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-6 flex-shrink-0">
@@ -77,7 +75,7 @@ export default function NotepadPage() {
       </Tabs>
 
       <p className="text-sm text-muted-foreground mt-4 flex-shrink-0">
-        {currentContent.length} 글자 | {currentContent.split('\n').length} 줄 | electron-store를 통해 자동으로 저장됩니다
+        입력하면 자동으로 저장됩니다.
       </p>
     </div>
   )

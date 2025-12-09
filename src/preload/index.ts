@@ -7,6 +7,13 @@ const api = {
     load: (noteId: string): Promise<string> => ipcRenderer.invoke('notepad:load', noteId),
     save: (noteId: string, content: string): Promise<boolean> => ipcRenderer.invoke('notepad:save', noteId, content),
     loadAll: (): Promise<Record<string, string>> => ipcRenderer.invoke('notepad:loadAll')
+  },
+  hostname: {
+    get: () => ipcRenderer.invoke('hostname:get'),
+    set: (newHostname: string) => ipcRenderer.invoke('hostname:set', newHostname)
+  },
+  system: {
+    restart: () => ipcRenderer.invoke('system:restart')
   }
 }
 

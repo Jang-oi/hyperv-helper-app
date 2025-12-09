@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { registerAllHandlers } from './handlers'
 
 // electron-store dynamic import (ESM 패키지)
 let store: any
@@ -68,24 +69,8 @@ app.whenReady().then(async () => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  // Notepad IPC handlers
-  ipcMain.handle('notepad:load', (_event, noteId: string) => {
-    return store.get(`notepad.${noteId}`, '')
-  })
-
-  ipcMain.handle('notepad:save', (_event, noteId: string, content: string) => {
-    store.set(`notepad.${noteId}`, content)
-    return true
-  })
-
-  ipcMain.handle('notepad:loadAll', () => {
-    const notes: Record<string, string> = {}
-    for (let i = 1; i <= 5; i++) {
-      const noteId = `note-${i}`
-      notes[noteId] = store.get(`notepad.${noteId}`, '') as string
-    }
-    return notes
-  })
+  // 모든 IPC 핸들러 등록 (확장 가능한 구조)
+  registerAllHandlers(store)
 
   createWindow()
 
