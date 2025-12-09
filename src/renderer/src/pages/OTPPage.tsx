@@ -112,38 +112,38 @@ export default function OTPPage() {
 
       <div className="relative mb-4">
         <div ref={scrollAreaRef}>
-          <ScrollArea className="h-[278px]">
-            <div className="space-y-3 pr-4">
+          <ScrollArea className="h-[200px]">
+            <div className="grid grid-cols-2 gap-3">
               {accounts.map((account) => (
-                <Card key={account.id} className="p-3.5">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">{account.alias}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold text-primary tracking-wider">{account.code}</p>
+                <Card key={account.id} className="p-3">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground truncate">{account.alias}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xl font-bold text-primary tracking-wider">{account.code}</p>
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0"
+                          className="h-6 w-6 p-0"
                           onClick={() => copyToClipboard(account.code, account.id)}
                         >
                           {copiedId === account.id ? (
-                            <Check className="w-3.5 h-3.5 text-primary" />
+                            <Check className="w-3 h-3 text-primary" />
                           ) : (
-                            <Copy className="w-3.5 h-3.5" />
+                            <Copy className="w-3 h-3" />
                           )}
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleDeleteAccount(account.id)}
+                        >
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </Button>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-1 font-mono">{account.key}</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => handleDeleteAccount(account.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                    </Button>
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">{account.key}</p>
                   </div>
                 </Card>
               ))}
