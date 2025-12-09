@@ -1,10 +1,14 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import ElectronStore from 'electron-store'
 
-// electron-store 초기화
-const store = new ElectronStore()
+// electron-store dynamic import (ESM 패키지)
+let store: any
+
+async function initStore() {
+  const Store = (await import('electron-store')).default
+  store = new Store()
+}
 
 export const uniIcon = is.dev
   ? join(__dirname, '../../build/icon.ico') // 개발 환경 경로
@@ -47,7 +51,10 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // electron-store 초기화
+  await initStore()
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
