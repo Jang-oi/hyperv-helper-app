@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Trash2, Plus, RefreshCw, ChevronDown, Info } from "lucide-react"
+import { Plus, RefreshCw, Info } from "lucide-react"
 import { toast } from "sonner"
 
 interface ProxyRule {
@@ -20,6 +19,7 @@ interface ProxyRule {
 export default function PortProxyPage() {
   const [rules, setRules] = useState<ProxyRule[]>([])
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("default")
 
   const [wasDevHost, setWasDevHost] = useState("")
   const [sapDevHost, setSapDevHost] = useState("")
@@ -32,8 +32,6 @@ export default function PortProxyPage() {
   })
 
   const [pasteText, setPasteText] = useState("")
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   // 실제 Windows netsh에서 규칙 조회
   const loadRules = async () => {
@@ -55,24 +53,41 @@ export default function PortProxyPage() {
     }
   }
 
+  // netsh 출력 형식으로 변환
+  const formatRulesAsNetsh = (): string => {
+    if (rules.length === 0) {
+      return "등록된 규칙이 없습니다."
+    }
+
+    let output = "Listen on ipv4:             Connect to ipv4:\n\n"
+    output += "Address         Port        Address         Port\n"
+    output += "--------------- ----------  --------------- ----------\n"
+
+    rules.forEach((rule) => {
+      const listenAddr = "0.0.0.0".padEnd(15)
+      const listenPort = rule.listenPort.padEnd(11)
+      const connectAddr = rule.connectAddress.padEnd(15)
+      const connectPort = rule.connectPort
+
+      output += `${listenAddr} ${listenPort} ${connectAddr} ${connectPort}\n`
+    })
+
+    return output
+  }
+
   // 페이지 로드 시 규칙 조회
   useEffect(() => {
     loadRules()
   }, [])
 
-  useEffect(() => {
-    const checkScroll = () => {
-      const scrollElement = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]")
-      if (scrollElement) {
-        const hasScroll = scrollElement.scrollHeight > scrollElement.clientHeight
-        setShowScrollIndicator(hasScroll)
-      }
+  // 탭 변경 핸들러
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    // "current" 탭으로 이동 시 규칙 새로고침
+    if (value === "current") {
+      loadRules()
     }
-
-    checkScroll()
-    const timer = setTimeout(checkScroll, 100)
-    return () => clearTimeout(timer)
-  }, [rules])
+  }
 
   // WAS Dev 프리셋 추가 (80, 443, 8082)
   const addWasDevRules = async () => {
@@ -81,9 +96,7 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
-      // 3개의 규칙을 순차적으로 추가
+    const addRulesPromise = async () => {
       const ports = [
         { listen: "80", connect: "80" },
         { listen: "443", connect: "443" },
@@ -97,21 +110,20 @@ export default function PortProxyPage() {
           port.connect
         )
         if (!result.success) {
-          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
-          await loadRules()
-          return
+          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
         }
       }
 
-      toast.success("WAS Dev 규칙 3개가 추가되었습니다.")
       setWasDevHost("")
       await loadRules()
-    } catch (error) {
-      toast.error("WAS Dev 규칙 추가 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+      return { count: 3 }
     }
+
+    toast.promise(addRulesPromise(), {
+      loading: "WAS Dev 규칙을 추가하는 중...",
+      success: (data) => `WAS Dev 규칙 ${data.count}개가 추가되었습니다.`,
+      error: (err) => err.message || "WAS Dev 규칙 추가에 실패했습니다.",
+    })
   }
 
   // SAP Dev 프리셋 추가 (3200, 3300)
@@ -121,8 +133,7 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
+    const addRulesPromise = async () => {
       const ports = [
         { listen: "3200", connect: "3200" },
         { listen: "3300", connect: "3300" },
@@ -135,21 +146,20 @@ export default function PortProxyPage() {
           port.connect
         )
         if (!result.success) {
-          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
-          await loadRules()
-          return
+          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
         }
       }
 
-      toast.success("SAP Dev 규칙 2개가 추가되었습니다.")
       setSapDevHost("")
       await loadRules()
-    } catch (error) {
-      toast.error("SAP Dev 규칙 추가 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+      return { count: 2 }
     }
+
+    toast.promise(addRulesPromise(), {
+      loading: "SAP Dev 규칙을 추가하는 중...",
+      success: (data) => `SAP Dev 규칙 ${data.count}개가 추가되었습니다.`,
+      error: (err) => err.message || "SAP Dev 규칙 추가에 실패했습니다.",
+    })
   }
 
   // SAP QAS 프리셋 추가 (3201→3200, 3301→3300)
@@ -159,8 +169,7 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
+    const addRulesPromise = async () => {
       const ports = [
         { listen: "3201", connect: "3200" },
         { listen: "3301", connect: "3300" },
@@ -173,21 +182,20 @@ export default function PortProxyPage() {
           port.connect
         )
         if (!result.success) {
-          toast.error(`포트 ${port.listen} 추가 실패: ${result.error}`)
-          await loadRules()
-          return
+          throw new Error(`포트 ${port.listen} 추가 실패: ${result.error}`)
         }
       }
 
-      toast.success("SAP QAS 규칙 2개가 추가되었습니다.")
       setSapQasHost("")
       await loadRules()
-    } catch (error) {
-      toast.error("SAP QAS 규칙 추가 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+      return { count: 2 }
     }
+
+    toast.promise(addRulesPromise(), {
+      loading: "SAP QAS 규칙을 추가하는 중...",
+      success: (data) => `SAP QAS 규칙 ${data.count}개가 추가되었습니다.`,
+      error: (err) => err.message || "SAP QAS 규칙 추가에 실패했습니다.",
+    })
   }
 
   // 커스텀 단일 규칙 추가
@@ -197,27 +205,26 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
+    const addRulePromise = async () => {
       const result = await window.api.portproxy.addRule(
         newRule.listenPort.trim(),
         newRule.connectAddress.trim(),
         newRule.connectPort.trim()
       )
 
-      if (result.success) {
-        toast.success("규칙이 추가되었습니다.")
-        setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
-        await loadRules()
-      } else {
-        toast.error(result.error || "규칙 추가에 실패했습니다.")
+      if (!result.success) {
+        throw new Error(result.error || "규칙 추가에 실패했습니다.")
       }
-    } catch (error) {
-      toast.error("규칙 추가 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+
+      setNewRule({ listenPort: "", connectAddress: "", connectPort: "" })
+      await loadRules()
     }
+
+    toast.promise(addRulePromise(), {
+      loading: "규칙을 추가하는 중...",
+      success: "규칙이 추가되었습니다.",
+      error: (err) => err.message || "규칙 추가에 실패했습니다.",
+    })
   }
 
   // netsh 출력 붙여넣기로 일괄 등록
@@ -248,8 +255,7 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
+    const addRulesPromise = async () => {
       let successCount = 0
       for (const rule of parsedRules) {
         const result = await window.api.portproxy.addRule(
@@ -262,15 +268,16 @@ export default function PortProxyPage() {
         }
       }
 
-      toast.success(`${successCount}개의 규칙이 추가되었습니다.`)
       setPasteText("")
       await loadRules()
-    } catch (error) {
-      toast.error("일괄 등록 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+      return { count: successCount, total: parsedRules.length }
     }
+
+    toast.promise(addRulesPromise(), {
+      loading: `${parsedRules.length}개의 규칙을 추가하는 중...`,
+      success: (data) => `${data.count}/${data.total}개의 규칙이 추가되었습니다.`,
+      error: "일괄 등록 중 오류가 발생했습니다.",
+    })
   }
 
   // DNS 재연결 (모든 규칙 재적용)
@@ -280,47 +287,27 @@ export default function PortProxyPage() {
       return
     }
 
-    setLoading(true)
-    try {
+    const reapplyPromise = async () => {
       const result = await window.api.portproxy.applyRules(rules)
-      if (result.success) {
-        toast.success("모든 규칙이 재적용되었습니다.")
-        await loadRules()
-      } else {
-        toast.error(result.error || "규칙 재적용에 실패했습니다.")
+      if (!result.success) {
+        throw new Error(result.error || "규칙 재적용에 실패했습니다.")
       }
-    } catch (error) {
-      toast.error("규칙 재적용 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
+      await loadRules()
+      return { count: rules.length }
     }
-  }
 
-  // 단일 규칙 삭제
-  const deleteRule = async (listenPort: string) => {
-    setLoading(true)
-    try {
-      const result = await window.api.portproxy.deleteRule(listenPort)
-      if (result.success) {
-        toast.success(`포트 ${listenPort} 규칙이 삭제되었습니다.`)
-        await loadRules()
-      } else {
-        toast.error(result.error || "규칙 삭제에 실패했습니다.")
-      }
-    } catch (error) {
-      toast.error("규칙 삭제 중 오류가 발생했습니다.")
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
+    toast.promise(reapplyPromise(), {
+      loading: "모든 규칙을 재적용하는 중...",
+      success: (data) => `${data.count}개의 규칙이 재적용되었습니다.`,
+      error: (err) => err.message || "규칙 재적용에 실패했습니다.",
+    })
   }
 
   return (
     <div className="px-4">
       <h2 className="text-2xl font-bold text-foreground mb-5">PortProxy 설정</h2>
 
-      <Tabs defaultValue="default" className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="w-full grid grid-cols-4 h-10">
           <TabsTrigger value="default">프리셋</TabsTrigger>
           <TabsTrigger value="custom">커스텀</TabsTrigger>
@@ -472,58 +459,23 @@ export default function PortProxyPage() {
             </div>
           </Card>
 
-          <h3 className="text-sm font-semibold text-foreground mb-3">등록된 규칙 ({rules.length})</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            등록된 규칙 ({rules.length})
+            <span className="text-xs text-muted-foreground ml-2 font-normal">
+              (netsh interface portproxy show all)
+            </span>
+          </h3>
           {loading ? (
             <Card className="p-6 text-center">
               <p className="text-sm text-muted-foreground">규칙을 불러오는 중...</p>
             </Card>
-          ) : rules.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">등록된 규칙이 없습니다.</p>
-            </Card>
           ) : (
-            <div ref={scrollAreaRef} className="relative">
-              <ScrollArea className="h-[320px]">
-                <div className="space-y-2.5 pr-3">
-                  {rules.map((rule) => (
-                    <Card key={rule.id} className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1">리슨 포트</p>
-                            <p className="text-sm font-semibold text-foreground">{rule.listenPort}</p>
-                          </div>
-                          <span className="text-muted-foreground">→</span>
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1">커넥트 대상</p>
-                            <p className="text-sm font-semibold text-foreground">
-                              {rule.connectAddress}:{rule.connectPort}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteRule(rule.listenPort)}
-                          className="h-8 w-8 p-0"
-                          disabled={loading}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
-              {showScrollIndicator && (
-                <div className="absolute bottom-0 left-0 right-0 h-6 flex items-end justify-center pointer-events-none">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/90 px-2 py-1 rounded">
-                    <ChevronDown className="w-4 h-4 animate-bounce" />
-                    <span>아래로 스크롤</span>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Textarea
+              value={formatRulesAsNetsh()}
+              readOnly
+              rows={15}
+              className="font-mono text-xs resize-none bg-black text-green-400 border-gray-700"
+            />
           )}
         </TabsContent>
       </Tabs>
