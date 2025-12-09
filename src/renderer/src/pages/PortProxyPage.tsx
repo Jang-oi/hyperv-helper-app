@@ -116,8 +116,17 @@ export default function PortProxyPage() {
     }
   }
 
-  const reapplyRules = () => {
-    console.log("[v0] Reapplying all portproxy rules:", rules)
+  const reapplyRules = async () => {
+    try {
+      const result = await window.api.portproxy.applyRules(rules)
+      if (result.success) {
+        console.log("모든 PortProxy 규칙이 성공적으로 재적용되었습니다.")
+      } else {
+        console.error("PortProxy 규칙 재적용 실패:", result.error)
+      }
+    } catch (error) {
+      console.error("PortProxy 규칙 재적용 중 오류 발생:", error)
+    }
   }
 
   const deleteRule = (id: string) => {

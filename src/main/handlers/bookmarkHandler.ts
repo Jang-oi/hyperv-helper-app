@@ -30,14 +30,14 @@ async function writeBookmarks(data: any): Promise<void> {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-const STAGES = ["개발", "품질", "운영"]; // 헬퍼 상수
+const STAGES = ["DEV", "QAS", "PRD"]; // 헬퍼 상수
 
 export function registerBookmarksHandlers(): void {
 
   /**
    * 💡 북마크 목록 조회 핸들러 (요청하신 get 기능)
    * 특정 스테이지(폴더)에 속한 북마크 목록을 반환합니다.
-   * @param stage '개발', '품질', '운영'
+   * @param stage 'DEV', 'QAS', 'PRD'
    * @returns 북마크 목록 (id, name, url을 포함)
    */
   ipcMain.handle('bookmark:get', async (_event, stage: string): Promise<any> => {
@@ -77,7 +77,7 @@ export function registerBookmarksHandlers(): void {
 
   /**
    * 💡 북마크 추가 핸들러 (BookmarksPage.tsx 로직에 맞게 수정)
-   * @param stage '개발', '품질', '운영'
+   * @param stage 'DEV', 'QAS', 'PRD'
    * @param name 북마크 이름
    * @param url 북마크 URL
    */

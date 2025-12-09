@@ -15,19 +15,19 @@ interface BookmarkItem {
   url: string
 }
 
-const STAGES = ["개발", "품질", "운영"]
+const STAGES = ["DEV", "QAS", "PRD"]
 
 export default function BookmarksPage() {
-  const [stage, setStage] = useState<string>("개발")
+  const [stage, setStage] = useState<string>("DEV")
   const [name, setName] = useState<string>("") // 북마크 이름 추가 입력 필드
   const [wasUrl, setWasUrl] = useState<string>("")
   const [autoAddIp, setAutoAddIp] = useState<string>("")
   const [addMode, setAddMode] = useState<"auto" | "manual">("auto")
 
   const [bookmarks, setBookmarks] = useState<Record<string, BookmarkItem[]>>({
-    개발: [],
-    품질: [],
-    운영: [],
+    DEV: [],
+    QAS: [],
+    PRD: [],
   })
   const [loading, setLoading] = useState(false)
 
@@ -36,7 +36,7 @@ export default function BookmarksPage() {
   // ---------------------------------------------------
   const loadBookmarks = async () => {
     setLoading(true)
-    const newBookmarks: Record<string, BookmarkItem[]> = { 개발: [], 품질: [], 운영: [] }
+    const newBookmarks: Record<string, BookmarkItem[]> = { DEV: [], QAS: [], PRD: [] }
     let hasError = false
 
     try {
