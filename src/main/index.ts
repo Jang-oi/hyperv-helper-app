@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { registerAllHandlers } from './handlers'
 
 // electron-store dynamic import (ESM 패키지)
@@ -14,6 +15,60 @@ async function initStore() {
 export const uniIcon = is.dev
   ? join(__dirname, '../../build/icon.ico') // 개발 환경 경로
   : join(process.resourcesPath, 'icon.ico') // 빌드된 앱(프로덕션) 경로
+
+// autoUpdater 설정
+autoUpdater.autoDownload = false // 수동 다운로드로 설정
+autoUpdater.autoInstallOnAppQuit = true
+
+// 개발 환경에서도 업데이트 확인 가능하도록 설정
+if (is.dev) {
+  autoUpdater.updateConfigPath = join(__dirname, '../../dev-app-update.yml')
+  autoUpdater.forceDevUpdateConfig = true
+}
+
+// autoUpdater 이벤트 리스너
+autoUpdater.on('checking-for-update', () => {
+  console.log('업데이트 확인 중...')
+})
+
+autoUpdater.on('update-available', (info) => {
+  console.log('업데이트 사용 가능:', info)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('update-available', {
+      version: info.version,
+      releaseDate: info.releaseDate,
+      releaseNotes: info.releaseNotes
+    })
+  })
+})
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('최신 버전입니다:', info)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('update-not-available')
+  })
+})
+
+autoUpdater.on('download-progress', (progressInfo) => {
+  console.log(`다운로드 진행: ${progressInfo.percent}%`)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('download-progress', progressInfo)
+  })
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('업데이트 다운로드 완료:', info)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('update-downloaded')
+  })
+})
+
+autoUpdater.on('error', (error) => {
+  console.error('자동 업데이트 오류:', error)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('update-error', error.message)
+  })
+})
 
 function createWindow(): void {
   // Create the browser window.

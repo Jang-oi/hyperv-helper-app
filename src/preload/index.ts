@@ -45,7 +45,36 @@ const api = {
   // 💡 Version API 추가
   version: {
     getInfo: () => ipcRenderer.invoke('version:getInfo'),
-    downloadUpdate: () => ipcRenderer.invoke('version:downloadUpdate')
+    checkForUpdates: () => ipcRenderer.invoke('version:checkForUpdates'),
+    downloadUpdate: () => ipcRenderer.invoke('version:downloadUpdate'),
+    quitAndInstall: () => ipcRenderer.invoke('version:quitAndInstall'),
+
+    // 이벤트 리스너
+    onUpdateAvailable: (callback: (info: any) => void) => {
+      const listener = (_event: any, info: any) => callback(info)
+      ipcRenderer.on('update-available', listener)
+      return () => ipcRenderer.removeListener('update-available', listener)
+    },
+    onUpdateNotAvailable: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on('update-not-available', listener)
+      return () => ipcRenderer.removeListener('update-not-available', listener)
+    },
+    onDownloadProgress: (callback: (progressInfo: any) => void) => {
+      const listener = (_event: any, progressInfo: any) => callback(progressInfo)
+      ipcRenderer.on('download-progress', listener)
+      return () => ipcRenderer.removeListener('download-progress', listener)
+    },
+    onUpdateDownloaded: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on('update-downloaded', listener)
+      return () => ipcRenderer.removeListener('update-downloaded', listener)
+    },
+    onUpdateError: (callback: (error: string) => void) => {
+      const listener = (_event: any, error: string) => callback(error)
+      ipcRenderer.on('update-error', listener)
+      return () => ipcRenderer.removeListener('update-error', listener)
+    }
   }
 }
 

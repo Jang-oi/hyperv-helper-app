@@ -6,6 +6,5 @@ out
 *.log*
 
 # Project exclude paths
-/src/preload/index.d.ts
 .idea
 .vscode

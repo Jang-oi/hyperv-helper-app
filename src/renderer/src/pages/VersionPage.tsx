@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, Download, ExternalLink, RefreshCw } from 'lucide-react'
+import { CheckCircle, Download, ExternalLink, RefreshCw, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Progress } from '@/components/ui/progress'
 import Loading from '@/components/Loading'
 import type { GitHubRelease, VersionInfo } from '../../../shared/types'
 
@@ -12,6 +13,9 @@ export default function VersionPage() {
   const [loading, setLoading] = useState(true)
   const [checking, setChecking] = useState(false)
   const [updating, setUpdating] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState(0)
+  const [updateDownloaded, setUpdateDownloaded] = useState(false)
 
   // 버전 정보 로드
   const loadVersionInfo = async () => {
@@ -32,34 +36,92 @@ export default function VersionPage() {
 
   useEffect(() => {
     loadVersionInfo()
+
+    // electron-updater 이벤트 리스너 등록
+    const unsubUpdateAvailable = window.api.version.onUpdateAvailable((info) => {
+      console.log('업데이트 사용 가능:', info)
+      toast.success(`새로운 버전 ${info.version}이 있습니다!`)
+    })
+
+    const unsubUpdateNotAvailable = window.api.version.onUpdateNotAvailable(() => {
+      console.log('최신 버전입니다')
+    })
+
+    const unsubDownloadProgress = window.api.version.onDownloadProgress((progressInfo) => {
+      setDownloadProgress(Math.round(progressInfo.percent))
+    })
+
+    const unsubUpdateDownloaded = window.api.version.onUpdateDownloaded(() => {
+      setDownloading(false)
+      setUpdateDownloaded(true)
+      toast.success('업데이트 다운로드 완료! 재시작하여 설치하세요.')
+    })
+
+    const unsubUpdateError = window.api.version.onUpdateError((error) => {
+      setDownloading(false)
+      setChecking(false)
+      setUpdating(false)
+      toast.error(`업데이트 오류: ${error}`)
+    })
+
+    // cleanup
+    return () => {
+      unsubUpdateAvailable()
+      unsubUpdateNotAvailable()
+      unsubDownloadProgress()
+      unsubUpdateDownloaded()
+      unsubUpdateError()
+    }
   }, [])
 
-  // 업데이트 확인
+  // 업데이트 확인 (electron-updater)
   const handleCheckUpdate = async () => {
     setChecking(true)
     try {
-      await loadVersionInfo()
-      toast.success('최신 버전 확인 완료')
+      const result = await window.api.version.checkForUpdates()
+      if (result.success) {
+        if (result.updateAvailable) {
+          toast.success('업데이트가 있습니다!')
+        } else {
+          toast.success('최신 버전입니다.')
+        }
+        await loadVersionInfo()
+      } else {
+        toast.error(result.error || '업데이트 확인 실패')
+      }
+    } catch (error) {
+      toast.error('업데이트 확인 중 오류가 발생했습니다.')
     } finally {
       setChecking(false)
     }
   }
 
-  // 업데이트 다운로드 (GitHub 릴리즈 페이지로 이동)
+  // 업데이트 다운로드 (electron-updater)
   const handleUpdate = async () => {
     if (!versionInfo?.latestVersion) return
 
     setUpdating(true)
+    setDownloading(true)
+    setDownloadProgress(0)
+
     try {
-      // GitHub 릴리즈 페이지 열기
-      const releaseUrl = `https://github.com/Jang-oi/hyperv-helper-app/releases/latest`
-      window.open(releaseUrl, '_blank')
-      toast.info('GitHub 릴리즈 페이지에서 최신 버전을 다운로드하세요.')
+      const result = await window.api.version.downloadUpdate()
+      if (!result.success) {
+        toast.error(result.error || '업데이트 다운로드 실패')
+        setDownloading(false)
+      }
+      // 다운로드 진행은 이벤트 리스너에서 처리
     } catch (error) {
-      toast.error('릴리즈 페이지를 여는데 실패했습니다.')
+      toast.error('업데이트 다운로드 중 오류가 발생했습니다.')
+      setDownloading(false)
     } finally {
       setUpdating(false)
     }
+  }
+
+  // 재시작 및 설치
+  const handleInstall = () => {
+    window.api.version.quitAndInstall()
   }
 
   // 릴리즈 노트 파싱 (마크다운을 간단한 리스트로 변환)
@@ -121,7 +183,9 @@ export default function VersionPage() {
 
   return (
     <div className="px-4">
-      {(checking || updating) && <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />}
+      {(checking || (updating && !downloading)) && (
+        <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />
+      )}
 
       <h2 className="text-2xl font-bold text-foreground mb-5">버전 정보</h2>
 
@@ -145,15 +209,33 @@ export default function VersionPage() {
                 </Button>
               </>
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">최신 버전</p>
-                  <p className="text-sm font-semibold text-primary">v{versionInfo.latestVersion}</p>
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">최신 버전</p>
+                    <p className="text-sm font-semibold text-primary">v{versionInfo.latestVersion}</p>
+                  </div>
+                  {updateDownloaded ? (
+                    <Button onClick={handleInstall} className="bg-green-600 hover:bg-green-700">
+                      <RotateCw className="w-4 h-4 mr-2" />
+                      재시작 및 설치
+                    </Button>
+                  ) : (
+                    <Button onClick={handleUpdate} disabled={updating || downloading}>
+                      <Download className="w-4 h-4 mr-2" />
+                      {downloading ? '다운로드 중...' : '업데이트'}
+                    </Button>
+                  )}
                 </div>
-                <Button onClick={handleUpdate} disabled={updating}>
-                  <Download className="w-4 h-4 mr-2" />
-                  {updating ? '다운로드 중...' : '업데이트'}
-                </Button>
+                {downloading && (
+                  <div className="w-full">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground">다운로드 진행</span>
+                      <span className="text-xs font-medium">{downloadProgress}%</span>
+                    </div>
+                    <Progress value={downloadProgress} className="h-2" />
+                  </div>
+                )}
               </div>
             )}
           </div>

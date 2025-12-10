@@ -1,5 +1,6 @@
 import { ipcMain, app } from 'electron'
 import https from 'https'
+import { autoUpdater } from 'electron-updater'
 import type { VersionResult, GitHubRelease, VersionInfo } from '../../shared/types'
 
 const GITHUB_REPO = 'Jang-oi/hyperv-helper-app'
@@ -85,11 +86,38 @@ export function registerVersionHandlers(): void {
     }
   })
 
-  // 업데이트 다운로드 (향후 electron-updater 연동)
+  // electron-updater: 업데이트 확인
+  ipcMain.handle('version:checkForUpdates', async () => {
+    try {
+      const result = await autoUpdater.checkForUpdates()
+      if (result && result.updateInfo) {
+        return {
+          success: true,
+          updateAvailable: true,
+          updateInfo: {
+            version: result.updateInfo.version,
+            releaseDate: result.updateInfo.releaseDate,
+            releaseNotes: result.updateInfo.releaseNotes
+          }
+        }
+      }
+      return {
+        success: true,
+        updateAvailable: false
+      }
+    } catch (error) {
+      return {
+        success: false,
+        updateAvailable: false,
+        error: `업데이트 확인 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+      }
+    }
+  })
+
+  // electron-updater: 업데이트 다운로드
   ipcMain.handle('version:downloadUpdate', async (): Promise<{ success: boolean; error?: string }> => {
     try {
-      // TODO: electron-updater를 사용한 자동 업데이트 구현
-      // 현재는 GitHub 릴리즈 페이지로 이동하도록 안내
+      await autoUpdater.downloadUpdate()
       return {
         success: true
       }
@@ -99,5 +127,10 @@ export function registerVersionHandlers(): void {
         error: `업데이트 다운로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
       }
     }
+  })
+
+  // electron-updater: 종료 후 설치
+  ipcMain.handle('version:quitAndInstall', () => {
+    autoUpdater.quitAndInstall(false, true)
   })
 }
