@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import Loading from '@/components/Loading'
 
 export default function HostnameChangePage() {
   const [hostname, setHostname] = useState('')
@@ -75,6 +76,8 @@ export default function HostnameChangePage() {
 
   return (
     <>
+      {loading && <Loading fullScreen message="처리 중..." />}
+
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-6">호스트네임 변경</h2>
 

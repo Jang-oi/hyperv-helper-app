@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import Loading from '@/components/Loading'
 
 interface BookmarkItem {
   id: string
@@ -138,6 +139,8 @@ export default function BookmarksPage() {
 
   return (
     <div>
+      {loading && <Loading fullScreen message="처리 중..." />}
+
       <h2 className="text-2xl font-bold text-foreground mb-5">Chrome 북마크</h2>
 
       <Tabs defaultValue="list" className="w-full">

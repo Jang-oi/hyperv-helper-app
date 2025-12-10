@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import Loading from '@/components/Loading'
 
 // 타입 정의 (핸들러와 일치)
 interface ProxyRule {
@@ -275,6 +276,8 @@ export default function PortProxyPage() {
 
   return (
     <div className="px-4">
+      {loading && <Loading fullScreen message="처리 중..." />}
+
       <h2 className="text-2xl font-bold text-foreground mb-5">PortProxy 설정</h2>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">

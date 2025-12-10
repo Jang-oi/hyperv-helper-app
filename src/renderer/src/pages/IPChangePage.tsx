@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import Loading from '@/components/Loading'
 
 // 이 파일에는 정의되어 있지 않지만, 사용되는 인터페이스 정의
 interface NetworkAdapter {
@@ -156,18 +157,13 @@ export default function IPChangePage() {
   }
 
   if (loadingAdapters) {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-6">IP 주소 변경</h2>
-        <Card className="p-6">
-          <p className="text-center text-muted-foreground">네트워크 어댑터를 검색 중...</p>
-        </Card>
-      </div>
-    )
+    return <Loading fullScreen message="네트워크 어댑터를 검색 중..." />
   }
 
   return (
     <div>
+      {loading && <Loading fullScreen message="처리 중..." />}
+
       <h2 className="text-2xl font-bold text-foreground mb-6">IP 주소 변경</h2>
       <Card className="p-6">
         <div className="space-y-5">
