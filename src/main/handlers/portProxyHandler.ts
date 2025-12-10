@@ -25,52 +25,63 @@ function parseNetshOutputToRules(stdout: string): ProxyRule[] {
   const rules: ProxyRule[] = []
   const lines = stdout.split('\n')
 
-  // const lines = input.trim().split('\n');
-  //
-  // // "주소 포트 주소 포트" 데이터가 시작되는 위치를 찾기 위한 정규 표현식
-  // const dataStartIndex = lines.findIndex((line) => line.startsWith('주소'));
-  //
-  // // 헤더 라인 이후 데이터 라인 추출
-  // const dataLines = lines.slice(dataStartIndex + 1);
-  // const filterLines = dataLines.filter((dataItem) => !dataItem.includes('----'));
-  //
-  // return filterLines
-  //   .map((line, rowIndex) => {
-  //     const parts = line.split(/\s+/).filter(Boolean);
-  //     if (parts.length >= 4) {
-  //       return {
-  //         id: rowIndex.toString(),
-  //         listenAddress: parts[0],
-  //         listenPort: parts[1],
-  //         connectAddress: parts[2],
-  //         connectPort: parts[3],
-  //       };
-  //     }
-  //     return null;
-  //   })
-  //   .filter((item): item is PortInfo => item !== null);
+  // 헤더 및 구분선에 포함될 수 있는 키워드들
+  const headerKeywords = [
+    'ipv4',
+    '주소',
+    '포트',
+    'Address',
+    'Port',
+    'Listen',
+    'Connect',
+    '수신',
+    '대기',
+    '연결'
+  ]
+
   for (const line of lines) {
     const trimmed = line.trim()
 
-    // 데이터 섹션에서 유효한 규칙 파싱
-    if (trimmed.length > 0) {
-      // 공백을 기준으로 분리
-      // netsh 출력: Listen on ipv4: ... Connect to ipv4: ...
-      // Address Port Address Port 순서가 아닐 수 있으므로 netsh v4tov4 표준 출력 기준
-      // 보통: * 8080  192.168.1.10  80
-      // parts[0]: ListenAddr, parts[1]: ListenPort, parts[2]: ConnectAddr, parts[3]: ConnectPort
-      const parts = trimmed.split(/\s+/)
+    // 빈 줄 스킵
+    if (trimmed.length === 0) continue
 
-      if (parts.length >= 4) {
-        rules.push({
-          listenAddress: parts[0],
-          listenPort: parts[1],
-          connectAddress: parts[2],
-          connectPort: parts[3]
-        })
-      }
-    }
+    // 구분선(---) 스킵
+    if (trimmed.includes('---')) continue
+
+    // 공백을 기준으로 분리
+    const parts = trimmed.split(/\s+/).filter(Boolean)
+
+    // 최소 4개의 필드가 필요 (listenAddress, listenPort, connectAddress, connectPort)
+    if (parts.length < 4) continue
+
+    // 헤더 키워드가 포함된 줄 스킵
+    const hasHeaderKeyword = parts.some((part) =>
+      headerKeywords.some((keyword) => part.toLowerCase().includes(keyword.toLowerCase()))
+    )
+    if (hasHeaderKeyword) continue
+
+    // 포트 번호가 실제 숫자인지 확인 (parts[1]과 parts[3]이 포트)
+    const listenPort = parts[1]
+    const connectPort = parts[3]
+    if (!/^\d+$/.test(listenPort) || !/^\d+$/.test(connectPort)) continue
+
+    // listenAddress 검증 (*, 또는 IP 주소 형식)
+    const listenAddress = parts[0]
+    if (listenAddress !== '*' && !/^\d+\./.test(listenAddress)) continue
+
+    // connectAddress 검증 (숫자로 시작하는 IP 또는 호스트명)
+    const connectAddress = parts[2]
+    if (!/^[\d\w]/.test(connectAddress)) continue
+
+    // 유효한 규칙 추가
+    rules.push({
+      listenAddress,
+      listenPort,
+      connectAddress,
+      connectPort
+    })
   }
+
   return rules
 }
 

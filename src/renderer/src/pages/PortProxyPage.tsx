@@ -47,11 +47,17 @@ export default function PortProxyPage() {
       if (result.success && result.rules) {
         setRules(result.rules)
 
-        // 배열을 보기 좋은 텍스트 형식으로 변환하여 Textarea에 표시
+        // 배열을 netsh 출력 형식으로 변환하여 Textarea에 표시
         if (result.rules.length > 0) {
-          const header = '주소            포트        주소            포트\n--------------- ----------  --------------- ----------\n'
+          const header =
+            'ipv4 수신 대기:             ipv4에 연결:\n\n' +
+            '주소            포트        주소            포트\n' +
+            '--------------- ----------  --------------- ----------\n'
           const body = result.rules
-            .map((r) => `${r.listenAddress.padEnd(15)} ${r.listenPort.padEnd(12)} ${r.connectAddress.padEnd(15)} ${r.connectPort}`)
+            .map(
+              (r) =>
+                `${r.listenAddress.padEnd(15)} ${r.listenPort.padEnd(11)} ${r.connectAddress.padEnd(15)} ${r.connectPort}`
+            )
             .join('\n')
           setRulesText(header + body)
         } else {
@@ -59,11 +65,12 @@ export default function PortProxyPage() {
         }
       } else {
         setRules([])
-        setRulesText('규칙이 없거나 조회 실패')
+        setRulesText('등록된 규칙이 없습니다.')
       }
     } catch (error) {
       toast.error('규칙 조회 중 오류가 발생했습니다.')
       setRules([])
+      setRulesText('')
     } finally {
       setLoading(false)
     }
