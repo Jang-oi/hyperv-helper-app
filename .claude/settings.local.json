@@ -10,7 +10,8 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(npm run format:*)",
       "Bash(npm install:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

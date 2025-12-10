@@ -3,28 +3,7 @@
 import { ipcMain } from 'electron'
 import { execCommand } from '../utils/commandExecutor'
 import { Validator } from '../utils/validator'
-
-export interface NetworkAdapter {
-  name: string
-  index: number
-  description: string
-}
-
-export interface IPConfig {
-  ip: string
-  subnet: string
-  gateway: string
-  dns1: string
-  dns2: string
-}
-
-export interface IPResult {
-  success: boolean
-  message?: string
-  error?: string
-  adapters?: NetworkAdapter[]
-  currentConfig?: IPConfig
-}
+import type { NetworkAdapter, IPConfig, IPResult } from '../../shared/types'
 
 /**
  * Prefix Length를 서브넷 마스크로 변환하는 헬퍼 함수

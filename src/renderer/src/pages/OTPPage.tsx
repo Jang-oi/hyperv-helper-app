@@ -7,13 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
-interface OTPAccount {
-  id: string
-  alias: string
-  key: string // 렌더러에서는 키를 사용하지 않지만 타입은 유지
-  code: string // 메인 프로세스에서 받아옴
-}
+import type { OTPAccount } from '../../../shared/types'
 
 export default function OTPPage() {
   // Mock 데이터를 제거하고 빈 배열로 초기화

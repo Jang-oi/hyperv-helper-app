@@ -1,13 +1,6 @@
 import { ipcMain } from 'electron'
 import { authenticator } from 'otplib'
-
-// OTP 계정 타입 정의
-export interface OTPAccount {
-  id: string
-  alias: string
-  key: string // 보안상 민감 정보, store에 저장됩니다.
-  code: string // 실시간 생성되어 클라이언트에 전달됩니다.
-}
+import type { OTPAccount } from '../../shared/types'
 
 // 💡 Electron Store 키 경로
 const STORE_KEY_PREFIX = 'otp.accounts'

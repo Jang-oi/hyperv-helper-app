@@ -2,13 +2,7 @@ import os from 'os'
 import { ipcMain } from 'electron'
 import { Validator } from '../utils/validator'
 import { execCommand } from '../utils/commandExecutor'
-
-interface HostnameResult {
-  success: boolean
-  hostname?: string
-  message?: string
-  error?: string
-}
+import type { HostnameResult } from '../../shared/types'
 
 /**
  * Hostname IPC Handler

@@ -1,25 +1,6 @@
 import { ipcMain } from 'electron'
 import { execCommand } from '../utils/commandExecutor'
-
-/**
- * PortProxy 규칙 인터페이스
- */
-export interface ProxyRule {
-  listenAddress: string
-  listenPort: string
-  connectAddress: string
-  connectPort: string
-}
-
-/**
- * PortProxy 작업 결과 인터페이스
- */
-export interface PortProxyResult {
-  success: boolean
-  error?: string
-  rules?: ProxyRule[]
-  message?: string
-}
+import type { ProxyRule, PortProxyResult } from '../../shared/types'
 
 function parseNetshOutputToRules(stdout: string): ProxyRule[] {
   const rules: ProxyRule[] = []

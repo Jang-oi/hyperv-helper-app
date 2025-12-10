@@ -5,21 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
-// 이 파일에는 정의되어 있지 않지만, 사용되는 인터페이스 정의
-interface NetworkAdapter {
-  name: string
-  index: number
-  description: string
-}
-
-interface IPConfig {
-  ip: string
-  subnet: string
-  gateway: string
-  dns1: string
-  dns2: string
-}
+import type { NetworkAdapter, IPConfig } from '../../../shared/types'
 
 export default function IPChangePage() {
   const [adapters, setAdapters] = useState<NetworkAdapter[]>([])
@@ -162,7 +148,7 @@ export default function IPChangePage() {
   }
 
   if (loadingAdapters) {
-    return <Loading message="네트워크 어댑터를 검색 중..." />
+    return <Loading fullScreen message="네트워크 어댑터를 검색 중..." />
   }
 
   return (

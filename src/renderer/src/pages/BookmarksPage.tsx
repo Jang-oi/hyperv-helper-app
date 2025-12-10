@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Edit3, ExternalLink, FolderOpen } from 'lucide-react'
+import { ExternalLink, FolderOpen } from 'lucide-react'
 import { toast } from 'sonner'
+import Loading from '@/components/Loading'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,13 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import Loading from '@/components/Loading'
-
-interface BookmarkItem {
-  id: string
-  name: string
-  url: string
-}
+import type { BookmarkItem } from '../../../shared/types'
 
 const STAGES = ['DEV', 'QAS', 'PRD']
 
@@ -163,7 +158,6 @@ export default function BookmarksPage() {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="manual" id="manual" />
                   <label htmlFor="manual" className="text-sm font-medium cursor-pointer flex items-center gap-1.5">
-                    <Edit3 className="w-4 h-4 text-gray-600" />
                     수동 추가
                   </label>
                 </div>
@@ -240,7 +234,6 @@ export default function BookmarksPage() {
                     className="w-full h-9 mt-2"
                     disabled={loading || !name.trim() || !wasUrl.trim()}
                   >
-                    <Edit3 className="w-4 h-4 mr-2" />
                     수동 북마크 추가
                   </Button>
                 </>

@@ -7,14 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import Loading from '@/components/Loading'
-
-// 타입 정의 (핸들러와 일치)
-interface ProxyRule {
-  listenAddress: string
-  listenPort: string
-  connectAddress: string
-  connectPort: string
-}
+import type { ProxyRule } from '../../../shared/types'
 
 export default function PortProxyPage() {
   // rules는 배열로 관리
