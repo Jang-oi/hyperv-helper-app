@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Info, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,6 +27,7 @@ export default function PortProxyPage() {
 
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('default')
+  const [showResetDialog, setShowResetDialog] = useState(false)
 
   const [wasDevHost, setWasDevHost] = useState('')
   const [sapDevHost, setSapDevHost] = useState('')
@@ -225,14 +236,13 @@ export default function PortProxyPage() {
 
   // 💡 전체 초기화 (Reset)
   const handleResetRules = async () => {
-    if (!confirm('정말 모든 PortProxy 규칙을 삭제하시겠습니까?')) return
-
     setLoading(true)
     try {
       const result = await window.api.portproxy.deleteAll()
       if (result.success) {
         toast.success('모든 규칙이 삭제되었습니다.')
         await loadRules()
+        setShowResetDialog(false)
       } else {
         toast.error(result.error || '초기화 실패')
       }
@@ -268,10 +278,11 @@ export default function PortProxyPage() {
   }
 
   return (
-    <div className="px-4">
-      {loading && <Loading fullScreen message="처리 중..." />}
+    <>
+      <div className="px-4">
+        {loading && <Loading fullScreen message="처리 중..." />}
 
-      <h2 className="text-2xl font-bold text-foreground mb-5">PortProxy 설정</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-5">PortProxy 설정</h2>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="w-full grid grid-cols-4 h-10">
@@ -412,7 +423,7 @@ export default function PortProxyPage() {
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-sm font-semibold text-foreground">netsh 출력 붙여넣기 (일괄 등록)</h3>
               <Button
-                onClick={handleResetRules}
+                onClick={() => setShowResetDialog(true)}
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -461,6 +472,27 @@ export default function PortProxyPage() {
           />
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+
+      {/* 전체 초기화 확인 AlertDialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>전체 초기화 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말 모든 PortProxy 규칙을 삭제하시겠습니까?
+              <br />
+              이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetRules} className="bg-red-600 hover:bg-red-700">
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

@@ -187,7 +187,13 @@ export default function VersionPage() {
         <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />
       )}
 
-      <h2 className="text-2xl font-bold text-foreground mb-5">버전 정보</h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-2xl font-bold text-foreground">버전 정보</h2>
+        <Button variant="outline" size="sm" onClick={handleCheckUpdate} disabled={checking}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${checking ? 'animate-spin' : ''}`} />
+          {checking ? '확인 중...' : '업데이트 확인'}
+        </Button>
+      </div>
 
       {/* 현재 버전 카드 */}
       <Card className="p-6 mb-6">
@@ -196,18 +202,12 @@ export default function VersionPage() {
             <p className="text-sm text-muted-foreground mb-1">현재 버전</p>
             <p className="text-3xl font-bold text-foreground">v{versionInfo.currentVersion}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {versionInfo.isLatest ? (
-              <>
-                <div className="flex items-center gap-2 text-primary">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="text-sm font-medium">최신 버전</span>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleCheckUpdate} disabled={checking}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${checking ? 'animate-spin' : ''}`} />
-                  {checking ? '확인 중...' : '업데이트 확인'}
-                </Button>
-              </>
+              <div className="flex items-center gap-2 text-primary">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">최신 버전입니다</span>
+              </div>
             ) : (
               <div className="flex flex-col items-end gap-3">
                 <div className="flex items-center gap-3">
