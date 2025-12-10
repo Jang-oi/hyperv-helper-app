@@ -13,8 +13,8 @@ const menuItems: MenuItem[] = [
     label: '인프라',
     id: 'infrastructure',
     children: [
-      { label: 'IP 변경', id: 'ip-change' },
       { label: '호스트네임 변경', id: 'hostname-change' },
+      { label: 'IP 변경', id: 'ip-change' },
       { label: 'PortProxy 설정', id: 'portproxy' },
       { label: '북마크 설정', id: 'bookmarks' }
     ]

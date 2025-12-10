@@ -8,3 +8,4 @@ out
 # Project exclude paths
 .idea
 .vscode
+.claude

@@ -11,7 +11,7 @@ import PortProxyPage from './pages/PortProxyPage'
 import VersionPage from './pages/VersionPage'
 
 function App() {
-  const [activePage, setActivePage] = useState('ip-change')
+  const [activePage, setActivePage] = useState('hostname-change')
 
   const renderPage = () => {
     switch (activePage) {

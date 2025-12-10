@@ -1,11 +1,14 @@
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { registerAllHandlers } from './handlers'
 
 // electron-store dynamic import (ESM 패키지)
 let store: any
+let mainWindow: BrowserWindow
+let tray: Tray
+let isQuiting = false
 
 async function initStore() {
   const Store = (await import('electron-store')).default
@@ -72,7 +75,7 @@ autoUpdater.on('error', (error) => {
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 860,
     title: 'HyperV Helper',
@@ -86,8 +89,18 @@ function createWindow(): void {
     }
   })
 
+  mainWindow.setMenu(null)
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  // 4. 창이 닫힐 때 종료되는 대신 트레이로 최소화되도록 설정
+  mainWindow.on('close', (event) => {
+    if (!isQuiting) {
+      event.preventDefault()
+      mainWindow.minimize() // 대신 창 숨김
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -102,6 +115,26 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+}
+
+const createTray = () => {
+  tray = new Tray(uniIcon)
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '종료',
+      click: () => {
+        isQuiting = true // 실제 종료를 위한 플래그 설정
+        app.quit()
+      }
+    }
+  ])
+
+  tray.setToolTip('HyperV Helper')
+  tray.setContextMenu(contextMenu)
+
+  tray.on('click', () => {
+    mainWindow.show()
+  })
 }
 
 // This method will be called when Electron has finished
@@ -126,7 +159,7 @@ app.whenReady().then(async () => {
 
   // 모든 IPC 핸들러 등록 (확장 가능한 구조)
   registerAllHandlers(store)
-
+  createTray()
   createWindow()
 
   app.on('activate', function () {

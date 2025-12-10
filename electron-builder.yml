@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: hyperv-helper-app
+appId: com.company.unipost
+productName: HyperV-Helper
 directories:
   buildResources: build
 files:
@@ -12,8 +12,12 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: hyperv-helper-app
+  icon: build/icon.ico
+  executableName: HyperV-Helper
   requestedExecutionLevel: requireAdministrator
+extraResources:
+  - from: build/icon.ico
+    to: icon.ico
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
