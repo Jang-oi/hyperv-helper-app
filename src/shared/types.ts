@@ -64,3 +64,26 @@ export interface OTPAccount {
   key: string // 보안상 민감 정보, store에 저장됩니다.
   code: string // 실시간 생성되어 클라이언트에 전달됩니다.
 }
+
+// ==================== Version 관련 타입 ====================
+export interface GitHubRelease {
+  tag_name: string
+  name: string
+  body: string
+  published_at: string
+  html_url: string
+  prerelease: boolean
+}
+
+export interface VersionInfo {
+  currentVersion: string
+  latestVersion?: string
+  isLatest: boolean
+  releases: GitHubRelease[]
+}
+
+export interface VersionResult {
+  success: boolean
+  error?: string
+  versionInfo?: VersionInfo
+}

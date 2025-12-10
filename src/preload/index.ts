@@ -41,6 +41,11 @@ const api = {
   },
   system: {
     restart: () => ipcRenderer.invoke('system:restart')
+  },
+  // 💡 Version API 추가
+  version: {
+    getInfo: () => ipcRenderer.invoke('version:getInfo'),
+    downloadUpdate: () => ipcRenderer.invoke('version:downloadUpdate')
   }
 }
 

@@ -4,6 +4,7 @@ import { registerIPHandlers } from './ipHandler'
 import { registerNotepadHandlers } from './notepadHandler'
 import { registerOTPHandlers } from './otpHandler'
 import { registerPortProxyHandlers } from './portProxyHandler'
+import { registerVersionHandlers } from './versionHandler'
 
 /**
  * 모든 IPC 핸들러 등록
@@ -27,4 +28,7 @@ export function registerAllHandlers(store: any): void {
 
   // PortProxy 핸들러
   registerPortProxyHandlers()
+
+  // Version 핸들러
+  registerVersionHandlers()
 }
