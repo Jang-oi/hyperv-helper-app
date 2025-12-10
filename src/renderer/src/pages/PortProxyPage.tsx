@@ -47,10 +47,9 @@ export default function PortProxyPage() {
       if (result.success && result.rules) {
         setRules(result.rules)
 
-        // 배열을 netsh 출력 형식으로 변환하여 Textarea에 표시
+        // 배열을 간결한 테이블 형식으로 변환하여 Textarea에 표시
         if (result.rules.length > 0) {
           const header =
-            'ipv4 수신 대기:             ipv4에 연결:\n\n' +
             '주소            포트        주소            포트\n' +
             '--------------- ----------  --------------- ----------\n'
           const body = result.rules
