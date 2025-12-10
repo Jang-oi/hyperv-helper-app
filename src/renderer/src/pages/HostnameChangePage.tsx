@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import Loading from '@/components/Loading'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +14,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import Loading from '@/components/Loading'
 
 export default function HostnameChangePage() {
   const [hostname, setHostname] = useState('')
@@ -115,7 +115,9 @@ export default function HostnameChangePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>시스템 재시작</AlertDialogTitle>
             <AlertDialogDescription>
-              호스트네임 변경을 적용하려면 시스템을 재시작해야 합니다. 지금 재시작하시겠습니까?
+              호스트네임 변경을 적용하려면 시스템을 재시작해야 합니다.
+              <br />
+              지금 재시작하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,4 +1,4 @@
-appId: com.company.unipost
+appId: com.company.unipost.hyperv
 productName: HyperV-Helper
 directories:
   buildResources: build

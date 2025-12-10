@@ -1,7 +1,7 @@
-import { ipcMain, app } from 'electron'
 import https from 'https'
+import { app, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import type { VersionResult, GitHubRelease, VersionInfo } from '../../shared/types'
+import type { GitHubRelease, VersionInfo, VersionResult } from '../../shared/types'
 
 const GITHUB_REPO = 'Jang-oi/hyperv-helper-app'
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases`
@@ -90,17 +90,30 @@ export function registerVersionHandlers(): void {
   ipcMain.handle('version:checkForUpdates', async () => {
     try {
       const result = await autoUpdater.checkForUpdates()
+
       if (result && result.updateInfo) {
+        const serverVersion = result.updateInfo.version
+        const currentVersion = app.getVersion()
+
+        // 👉 동일 버전이면 업데이트 없음으로 처리
+        if (serverVersion === currentVersion) {
+          return {
+            success: true,
+            updateAvailable: false
+          }
+        }
+
         return {
           success: true,
           updateAvailable: true,
           updateInfo: {
-            version: result.updateInfo.version,
+            version: serverVersion,
             releaseDate: result.updateInfo.releaseDate,
             releaseNotes: result.updateInfo.releaseNotes
           }
         }
       }
+
       return {
         success: true,
         updateAvailable: false

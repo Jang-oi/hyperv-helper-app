@@ -1,8 +1,8 @@
 import os from 'os'
 import { ipcMain } from 'electron'
-import { Validator } from '../utils/validator'
-import { execCommand } from '../utils/commandExecutor'
 import type { HostnameResult } from '../../shared/types'
+import { execCommand } from '../utils/commandExecutor'
+import { Validator } from '../utils/validator'
 
 /**
  * Hostname IPC Handler
@@ -74,12 +74,12 @@ export function registerHostnameHandlers(): void {
       }
 
       // 재시작 확인 후 실행
-      const command = 'shutdown /r /t 10'
+      const command = 'shutdown /r /t 3'
       await execCommand(command)
 
       return {
         success: true,
-        message: '10초 후 시스템이 재시작됩니다.'
+        message: '3초 후 시스템이 재시작됩니다.'
       }
     } catch (error) {
       return {
