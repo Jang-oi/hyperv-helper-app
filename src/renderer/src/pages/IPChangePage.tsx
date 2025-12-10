@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import Loading from '@/components/Loading'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import Loading from '@/components/Loading'
 
 // 이 파일에는 정의되어 있지 않지만, 사용되는 인터페이스 정의
 interface NetworkAdapter {
@@ -102,7 +102,12 @@ export default function IPChangePage() {
   // 어댑터 변경 시 현재 설정 다시 로드
   const handleAdapterChange = async (adapterIndexString: string) => {
     setSelectedAdapterIndex(adapterIndexString)
-    await loadCurrentConfig(adapterIndexString)
+    setLoading(true)
+    try {
+      await loadCurrentConfig(adapterIndexString)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async () => {
@@ -157,7 +162,7 @@ export default function IPChangePage() {
   }
 
   if (loadingAdapters) {
-    return <Loading fullScreen message="네트워크 어댑터를 검색 중..." />
+    return <Loading message="네트워크 어댑터를 검색 중..." />
   }
 
   return (
