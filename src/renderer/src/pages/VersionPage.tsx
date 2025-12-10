@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, Download, ExternalLink, RefreshCw, RotateCw } from 'lucide-react'
+import { CheckCircle, Download, RefreshCw, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -124,33 +124,64 @@ export default function VersionPage() {
     window.api.version.quitAndInstall()
   }
 
-  // 릴리즈 노트 파싱 (마크다운을 간단한 리스트로 변환)
-  const parseReleaseNotes = (body: string): string[] => {
+  // 체인지 로그 파싱 (커밋 메시지를 사용자 친화적으로 변환)
+  const parseChangeLog = (body: string): { category: string; items: string[] }[] => {
     if (!body) return []
 
-    // 마크다운 리스트 항목 추출 (-, *, + 로 시작하는 라인)
     const lines = body.split('\n')
-    const items: string[] = []
+    const changeLog: { category: string; items: string[] }[] = []
+    let currentCategory = '주요 변경사항'
+    let currentItems: string[] = []
 
     for (const line of lines) {
       const trimmed = line.trim()
-      // 마크다운 리스트 항목 감지
-      if (trimmed.match(/^[-*+]\s+(.+)/)) {
-        const match = trimmed.match(/^[-*+]\s+(.+)/)
-        if (match) {
-          items.push(match[1])
-        }
+
+      // 빈 줄이나 🤖 Generated 라인 건너뛰기
+      if (!trimmed || trimmed.includes('🤖 Generated') || trimmed.includes('Co-Authored-By')) {
+        continue
       }
-      // 숫자 리스트 항목 감지
-      else if (trimmed.match(/^\d+\.\s+(.+)/)) {
-        const match = trimmed.match(/^\d+\.\s+(.+)/)
-        if (match) {
-          items.push(match[1])
+
+      // 카테고리 감지 (헤더나 카테고리 이름)
+      if (trimmed.match(/^#{1,3}\s+(.+)/) || trimmed.match(/^[A-Z][a-zA-Z\s]+:$/)) {
+        // 이전 카테고리 저장
+        if (currentItems.length > 0) {
+          changeLog.push({ category: currentCategory, items: [...currentItems] })
+          currentItems = []
         }
+        const headerMatch = trimmed.match(/^#{1,3}\s+(.+)/)
+        currentCategory = headerMatch ? headerMatch[1] : trimmed.replace(':', '')
+        continue
+      }
+
+      // 리스트 항목 감지 (-, *, +, 숫자)
+      let itemMatch = trimmed.match(/^[-*+]\s+(.+)/)
+      if (!itemMatch) {
+        itemMatch = trimmed.match(/^\d+\.\s+(.+)/)
+      }
+
+      if (itemMatch) {
+        let item = itemMatch[1]
+        // 이모지 제거 (선택사항)
+        item = item.replace(/^[✅❌⚡🔧🛡️📦🎨🏗️]+\s*/, '')
+        currentItems.push(item)
+      }
+      // 일반 텍스트 (카테고리가 아니고 리스트도 아닌 경우)
+      else if (trimmed.length > 0 && !trimmed.match(/^[#-]/)) {
+        currentItems.push(trimmed)
       }
     }
 
-    return items.length > 0 ? items : [body.substring(0, 200)]
+    // 마지막 카테고리 저장
+    if (currentItems.length > 0) {
+      changeLog.push({ category: currentCategory, items: currentItems })
+    }
+
+    // 결과가 없으면 원본 텍스트 일부 반환
+    if (changeLog.length === 0) {
+      return [{ category: '변경사항', items: [body.substring(0, 200)] }]
+    }
+
+    return changeLog
   }
 
   // 날짜 포맷팅
@@ -242,50 +273,56 @@ export default function VersionPage() {
         </div>
       </Card>
 
-      {/* 릴리즈 내역 */}
+      {/* 체인지 로그 */}
       <div>
-        <h3 className="text-lg font-semibold text-foreground mb-4">릴리즈 내역</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">체인지 로그</h3>
         <ScrollArea className="h-[420px] pr-4">
           <div className="space-y-4">
             {versionInfo.releases.length > 0 ? (
-              versionInfo.releases.map((release: GitHubRelease) => (
-                <Card key={release.tag_name} className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-semibold text-foreground">
-                          {release.name || release.tag_name}
-                        </h4>
-                        {release.tag_name.replace(/^v/, '') === versionInfo.currentVersion && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                            현재
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{formatDate(release.published_at)}</p>
+              versionInfo.releases.map((release: GitHubRelease) => {
+                const changeLogs = parseChangeLog(release.body)
+                return (
+                  <Card key={release.tag_name} className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {release.name || release.tag_name}
+                      </h4>
+                      {release.tag_name.replace(/^v/, '') === versionInfo.currentVersion && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                          현재
+                        </span>
+                      )}
+                      <span className="text-sm text-muted-foreground ml-auto">
+                        {formatDate(release.published_at)}
+                      </span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(release.html_url, '_blank')}
-                      className="text-primary hover:text-primary"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <ul className="space-y-2">
-                    {parseReleaseNotes(release.body).map((note, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm text-foreground">
-                        <span className="text-primary mt-0.5">•</span>
-                        <span>{note}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              ))
+
+                    {/* 카테고리별 변경사항 표시 */}
+                    <div className="space-y-3">
+                      {changeLogs.map((log, logIndex) => (
+                        <div key={logIndex}>
+                          {changeLogs.length > 1 && (
+                            <h5 className="text-sm font-semibold text-foreground mb-1.5">
+                              {log.category}
+                            </h5>
+                          )}
+                          <ul className="space-y-1.5">
+                            {log.items.map((item, itemIndex) => (
+                              <li key={itemIndex} className="flex items-start gap-2 text-sm text-foreground">
+                                <span className="text-primary mt-0.5 flex-shrink-0">•</span>
+                                <span className="break-words">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )
+              })
             ) : (
               <Card className="p-6">
-                <p className="text-center text-muted-foreground">릴리즈 내역이 없습니다.</p>
+                <p className="text-center text-muted-foreground">체인지 로그가 없습니다.</p>
               </Card>
             )}
           </div>
