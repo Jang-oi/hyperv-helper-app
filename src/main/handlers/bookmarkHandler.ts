@@ -158,7 +158,7 @@ export function registerBookmarksHandlers(): void {
         {
           date_added: String(Date.now()),
           id: String(Math.floor(Math.random() * 1000000) + 1),
-          name: `${stage} 이어카운팅`, // 요청하신 이름
+          name: `${stage} EA`, // 요청하신 이름
           type: 'url',
           url: `http://${ip}` // 80 포트 (HTTP 기본)
         },

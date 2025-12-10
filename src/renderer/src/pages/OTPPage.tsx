@@ -204,14 +204,14 @@ export default function OTPPage() {
                 <label className="text-xs font-medium text-foreground">계정명</label>
                 <Input
                   type="text"
-                  placeholder="예: Google 계정 3"
+                  placeholder="예: P000100"
                   className="h-9"
                   value={newAlias}
                   onChange={(e) => setNewAlias(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">OTP 키</label>
+                <label className="text-xs font-medium text-foreground">OTP 시크릿 키</label>
                 <Input
                   type="text"
                   placeholder="예: JBSWY3DPEHPK3PXP"

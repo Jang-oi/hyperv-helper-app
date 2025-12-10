@@ -33,8 +33,8 @@ const api = {
   // 💡 PortProxy API 추가
   portproxy: {
     getRules: () => ipcRenderer.invoke('portproxy:getRules'),
-    addRule: (listenPort: string, connectAddress: string, connectPort: string) =>
-      ipcRenderer.invoke('portproxy:addRule', listenPort, connectAddress, connectPort),
+    insertRule: (listenPort: string, connectAddress: string, connectPort: string) =>
+      ipcRenderer.invoke('portproxy:insertRule', listenPort, connectAddress, connectPort),
     deleteRule: (listenPort: string) => ipcRenderer.invoke('portproxy:deleteRule', listenPort),
     deleteAll: () => ipcRenderer.invoke('portproxy:deleteAll'),
     applyRules: (rules: any[]) => ipcRenderer.invoke('portproxy:applyRules', rules)

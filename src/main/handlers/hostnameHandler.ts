@@ -1,10 +1,7 @@
-import { exec } from 'child_process'
 import os from 'os'
-import { promisify } from 'util'
 import { ipcMain } from 'electron'
 import { Validator } from '../utils/validator'
-
-const execAsync = promisify(exec)
+import { execCommand } from '../utils/commandExecutor'
 
 interface HostnameResult {
   success: boolean
@@ -57,7 +54,7 @@ export function registerHostnameHandlers(): void {
       // PowerShell 명령어로 호스트네임 변경
       const command = `powershell -Command "Rename-Computer -NewName '${newHostname}' -Force"`
 
-      await execAsync(command)
+      await execCommand(command)
 
       return {
         success: true,
@@ -84,7 +81,7 @@ export function registerHostnameHandlers(): void {
 
       // 재시작 확인 후 실행
       const command = 'shutdown /r /t 10'
-      await execAsync(command)
+      await execCommand(command)
 
       return {
         success: true,

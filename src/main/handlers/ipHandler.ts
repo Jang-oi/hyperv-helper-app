@@ -1,11 +1,8 @@
 // ipHandler.ts 파일
 
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { ipcMain } from 'electron'
+import { execCommand } from '../utils/commandExecutor'
 import { Validator } from '../utils/validator'
-
-const execAsync = promisify(exec)
 
 export interface NetworkAdapter {
   name: string
@@ -52,9 +49,9 @@ export function registerIPHandlers(): void {
     try {
       // Get-NetIPAddress를 사용하여 IPv4 주소를 가진 어댑터 정보(Alias, Index)를 가져옴
       const command =
-        'powershell -NoProfile -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-NetIPAddress -AddressFamily IPv4 | Select-Object InterfaceAlias, InterfaceIndex, IPAddress | ConvertTo-Json"'
+        'powershell -Command "Get-NetIPAddress -AddressFamily IPv4 | Select-Object InterfaceAlias, InterfaceIndex, IPAddress | ConvertTo-Json"'
 
-      const { stdout } = await execAsync(command, { encoding: 'utf8' })
+      const { stdout } = await execCommand(command)
       const adaptersData = JSON.parse(stdout.trim())
 
       // JSON이 단일 객체일 경우 배열로 변환
@@ -109,7 +106,7 @@ export function registerIPHandlers(): void {
     // 1. IP 주소 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
     try {
       const ipCommand = `powershell -Command "Get-NetIPAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object IPAddress, PrefixLength | ConvertTo-Json"`
-      const { stdout } = await execAsync(ipCommand)
+      const { stdout } = await execCommand(ipCommand)
       const ipData = stdout.trim() ? JSON.parse(stdout.trim()) : []
 
       // IP 주소 데이터가 배열일 경우 (여러 개 할당된 경우 첫 번째 사용)
@@ -121,7 +118,7 @@ export function registerIPHandlers(): void {
     // 2. 게이트웨이 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
     try {
       const gatewayCommand = `powershell -Command "Get-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Select-Object NextHop | ConvertTo-Json"`
-      const { stdout: gatewayStdout } = await execAsync(gatewayCommand)
+      const { stdout: gatewayStdout } = await execCommand(gatewayCommand)
 
       // 출력된 JSON이 비어있을 수 있음
       const gatewayRawData = gatewayStdout.trim() ? JSON.parse(gatewayStdout.trim()) : []
@@ -137,7 +134,7 @@ export function registerIPHandlers(): void {
     // 3. DNS 서버 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
     try {
       const dnsCommand = `powershell -Command "Get-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object ServerAddresses | ConvertTo-Json"`
-      const { stdout: dnsStdout } = await execAsync(dnsCommand)
+      const { stdout: dnsStdout } = await execCommand(dnsCommand)
 
       // 출력된 JSON이 비어있을 수 있음
       dnsData = dnsStdout.trim() ? JSON.parse(dnsStdout.trim()) : { ServerAddresses: [] }
@@ -186,14 +183,13 @@ export function registerIPHandlers(): void {
           return { success: false, error: `보조 DNS: ${dns2Validation.error}` }
         }
       }
-      // ... (유효성 검사 로직은 변경 없음)
 
       // 기존 IP 제거 후 새 IP 설정
       try {
-        await execAsync(
+        await execCommand(
           `powershell -Command "Remove-NetIPAddress -InterfaceIndex ${adapterIndex} -Confirm:$false -ErrorAction SilentlyContinue"`
         )
-        await execAsync(
+        await execCommand(
           `powershell -Command "Remove-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -Confirm:$false -ErrorAction SilentlyContinue"`
         )
       } catch {
@@ -202,12 +198,12 @@ export function registerIPHandlers(): void {
 
       // IP 주소 설정
       const ipCommand = `powershell -Command "New-NetIPAddress -InterfaceIndex ${adapterIndex} -IPAddress '${config.ip}' -PrefixLength 24 -DefaultGateway '${config.gateway}' -ErrorAction Stop"`
-      await execAsync(ipCommand)
+      await execCommand(ipCommand)
 
       // DNS 서버 설정
       const dnsServers = config.dns2 ? `'${config.dns1}','${config.dns2}'` : `'${config.dns1}'`
       const dnsCommand = `powershell -Command "Set-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -ServerAddresses ${dnsServers}"`
-      await execAsync(dnsCommand)
+      await execCommand(dnsCommand)
 
       return {
         success: true,
