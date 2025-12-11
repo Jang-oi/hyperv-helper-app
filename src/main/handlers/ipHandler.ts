@@ -26,14 +26,15 @@ function parseIpconfigAll(output: string): ParsedAdapter[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
 
-    // 어댑터 시작 감지 (이더넷 어댑터, 무선 LAN 어댑터 등)
-    const adapterMatch = line.match(/^(이더넷|무선 LAN|Ethernet|Wireless LAN) 어댑터\s+(.+):/)
+    // 어댑터 시작 감지 (더 포괄적인 패턴)
+    // "이더넷 어댑터", "무선 LAN 어댑터", "Ethernet adapter", "Wireless LAN adapter" 등
+    const adapterMatch = line.match(/^(?:이더넷|무선 LAN|Ethernet|Wireless LAN)\s*어댑터\s+(.+):/)
     if (adapterMatch) {
       if (currentAdapter && currentAdapter.ipv4) {
         adapters.push(currentAdapter)
       }
       currentAdapter = {
-        name: adapterMatch[2].trim().replace(/:$/, ''),
+        name: adapterMatch[1].trim().replace(/:$/, ''),
         dns: []
       }
       isDnsMultiline = false
@@ -77,8 +78,8 @@ function parseIpconfigAll(output: string): ParsedAdapter[] {
       continue
     }
 
-    // DNS 서버 (추가 줄들 - 들여쓰기로 시작)
-    if (isDnsMultiline && line.match(/^\s{20,}(.+)/)) {
+    // DNS 서버 (추가 줄들 - 공백으로 시작하고 IP 주소 패턴)
+    if (isDnsMultiline && line.match(/^\s+\d+\.\d+\.\d+\.\d+/)) {
       const additionalDns = line.trim()
       if (additionalDns && additionalDns !== '') {
         currentAdapter.dns.push(additionalDns)
@@ -86,8 +87,8 @@ function parseIpconfigAll(output: string): ParsedAdapter[] {
       }
     }
 
-    // 빈 줄이면 DNS 멀티라인 종료
-    if (line.trim() === '') {
+    // 새로운 필드가 시작되면 DNS 멀티라인 종료
+    if (line.match(/^\s+[가-힣A-Za-z]/)) {
       isDnsMultiline = false
     }
   }
@@ -112,7 +113,7 @@ async function getAdapterIndexMapping(): Promise<Map<string, number>> {
     const data = JSON.parse(stdout.trim())
     const adapters = Array.isArray(data) ? data : [data]
 
-    const mapping = new Map<number, number>()
+    const mapping = new Map<string, number>()
     adapters.forEach((adapter: any) => {
       if (adapter.Name && adapter.InterfaceIndex) {
         mapping.set(adapter.Name, adapter.InterfaceIndex)
