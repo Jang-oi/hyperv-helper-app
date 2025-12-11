@@ -9,8 +9,8 @@ import type { IPConfig, NetworkAdapter } from '../../../shared/types'
 
 export default function IPChangePage() {
   const [adapters, setAdapters] = useState<NetworkAdapter[]>([])
-  // 선택된 어댑터의 InterfaceIndex(string 타입)를 저장
-  const [selectedAdapterIndex, setSelectedAdapterIndex] = useState<string>('')
+  // 선택된 어댑터의 이름을 저장
+  const [selectedAdapterName, setSelectedAdapterName] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [loadingAdapters, setLoadingAdapters] = useState(true)
 
@@ -30,11 +30,11 @@ export default function IPChangePage() {
         const result = await window.api.ip.getAdapters()
         if (result.success && result.adapters && result.adapters.length > 0) {
           setAdapters(result.adapters)
-          // 첫 번째 어댑터의 인덱스를 기본 선택
-          const firstAdapterIndex = String(result.adapters[0].index)
-          setSelectedAdapterIndex(firstAdapterIndex)
+          // 첫 번째 어댑터의 이름을 기본 선택
+          const firstAdapterName = result.adapters[0].name
+          setSelectedAdapterName(firstAdapterName)
           // 현재 설정 로드
-          await loadCurrentConfig(firstAdapterIndex)
+          await loadCurrentConfig(firstAdapterName)
         } else {
           toast.error('IPv4 주소가 할당된 어댑터를 찾을 수 없습니다.')
         }
@@ -49,12 +49,11 @@ export default function IPChangePage() {
   }, [])
 
   // 현재 IP 설정 로드 및 Input 필드 값 설정
-  const loadCurrentConfig = async (adapterIndexString: string) => {
-    const adapterIndex = parseInt(adapterIndexString, 10)
-    if (isNaN(adapterIndex)) return
+  const loadCurrentConfig = async (adapterName: string) => {
+    if (!adapterName) return
 
     try {
-      const result = await window.api.ip.getCurrentConfig(adapterIndex)
+      const result = await window.api.ip.getCurrentConfig(adapterName)
 
       if (result.success && result.currentConfig) {
         const config = result.currentConfig
@@ -86,25 +85,19 @@ export default function IPChangePage() {
   }
 
   // 어댑터 변경 시 현재 설정 다시 로드
-  const handleAdapterChange = async (adapterIndexString: string) => {
-    setSelectedAdapterIndex(adapterIndexString)
+  const handleAdapterChange = async (adapterName: string) => {
+    setSelectedAdapterName(adapterName)
     setLoading(true)
     try {
-      await loadCurrentConfig(adapterIndexString)
+      await loadCurrentConfig(adapterName)
     } finally {
       setLoading(false)
     }
   }
 
   const handleSubmit = async () => {
-    if (!selectedAdapterIndex) {
+    if (!selectedAdapterName) {
       toast.error('네트워크 어댑터를 선택해주세요.')
-      return
-    }
-
-    const adapterIndex = parseInt(selectedAdapterIndex, 10)
-    if (isNaN(adapterIndex)) {
-      toast.error('유효하지 않은 어댑터 인덱스입니다.')
       return
     }
 
@@ -130,12 +123,12 @@ export default function IPChangePage() {
         dns2: dns2
       }
 
-      const result = await window.api.ip.setConfig(adapterIndex, config)
+      const result = await window.api.ip.setConfig(selectedAdapterName, config)
 
       if (result.success) {
         toast.success('IP 설정이 성공적으로 변경되었습니다.')
         // 설정 후 현재 설정 다시 로드하여 Input 필드 업데이트
-        await loadCurrentConfig(selectedAdapterIndex)
+        await loadCurrentConfig(selectedAdapterName)
       } else {
         toast.error(result.error || 'IP 설정 변경에 실패했습니다.')
       }
@@ -161,13 +154,13 @@ export default function IPChangePage() {
           {/* 네트워크 어댑터 선택 */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">네트워크 어댑터</label>
-            <Select value={selectedAdapterIndex} onValueChange={handleAdapterChange} disabled={loading}>
+            <Select value={selectedAdapterName} onValueChange={handleAdapterChange} disabled={loading}>
               <SelectTrigger>
                 <SelectValue placeholder="어댑터 선택" />
               </SelectTrigger>
               <SelectContent>
                 {adapters.map((adapter) => (
-                  <SelectItem key={adapter.index} value={String(adapter.index)}>
+                  <SelectItem key={adapter.name} value={adapter.name}>
                     {adapter.name}
                   </SelectItem>
                 ))}

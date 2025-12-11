@@ -14,8 +14,8 @@ const api = {
   },
   ip: {
     getAdapters: () => ipcRenderer.invoke('ip:getAdapters'),
-    getCurrentConfig: (adapterIndex: number) => ipcRenderer.invoke('ip:getCurrentConfig', adapterIndex),
-    setConfig: (adapterIndex: number, config: any) => ipcRenderer.invoke('ip:setConfig', adapterIndex, config)
+    getCurrentConfig: (adapterName: string) => ipcRenderer.invoke('ip:getCurrentConfig', adapterName),
+    setConfig: (adapterName: string, config: any) => ipcRenderer.invoke('ip:setConfig', adapterName, config)
   },
   // 💡 북마크 API 추가
   bookmark: {

@@ -81,8 +81,8 @@ interface HostnameAPI {
 
 interface IPAPI {
   getAdapters: () => Promise<IPResult>
-  getCurrentConfig: (adapterIndex: number) => Promise<IPResult>
-  setConfig: (adapterIndex: number, config: any) => Promise<IPResult>
+  getCurrentConfig: (adapterName: string) => Promise<IPResult>
+  setConfig: (adapterName: string, config: any) => Promise<IPResult>
 }
 
 interface SystemAPI {

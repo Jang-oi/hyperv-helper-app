@@ -6,7 +6,6 @@
 // ==================== IP 관련 타입 ====================
 export interface NetworkAdapter {
   name: string
-  index: number
   description: string
 }
 
