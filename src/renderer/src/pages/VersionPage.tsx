@@ -104,23 +104,24 @@ export default function VersionPage() {
       setChecking(true)
       try {
         const checkResult = await window.api.version.checkForUpdates()
+        setChecking(false)
+
         if (!checkResult.success) {
           toast.error(checkResult.error || '업데이트 확인 실패')
-          setChecking(false)
           return
         }
         if (!checkResult.updateAvailable) {
           toast.success('최신 버전입니다.')
-          setChecking(false)
           return
         }
+
+        // 업데이트가 있으면 versionInfo를 갱신하고 바로 다운로드 시작
         await loadVersionInfo()
+        // 다운로드 계속 진행 (아래 로직으로)
       } catch (error) {
         toast.error('업데이트 확인 중 오류가 발생했습니다.')
         setChecking(false)
         return
-      } finally {
-        setChecking(false)
       }
     }
 

@@ -6,60 +6,157 @@ import { execCommand } from '../utils/commandExecutor'
 import { Validator } from '../utils/validator'
 
 /**
- * Prefix Length를 서브넷 마스크로 변환하는 헬퍼 함수
- * TS2345 오류 해결을 위해 mask 배열 타입을 number[]로 명시
+ * ipconfig /all 출력을 파싱하여 어댑터별 정보를 추출
  */
-function prefixToSubnet(prefix: number): string {
-  const mask: number[] = [] // number[]로 타입 명시
-  for (let i = 0; i < 4; i++) {
-    const n = Math.min(prefix, 8)
-    mask.push(256 - Math.pow(2, 8 - n))
-    prefix -= n
+interface ParsedAdapter {
+  name: string
+  ipv4?: string
+  subnet?: string
+  gateway?: string
+  dns: string[]
+}
+
+function parseIpconfigAll(output: string): ParsedAdapter[] {
+  const adapters: ParsedAdapter[] = []
+  const lines = output.split('\n')
+
+  let currentAdapter: ParsedAdapter | null = null
+  let isDnsMultiline = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // 어댑터 시작 감지 (이더넷 어댑터, 무선 LAN 어댑터 등)
+    const adapterMatch = line.match(/^(이더넷|무선 LAN|Ethernet|Wireless LAN) 어댑터\s+(.+):/)
+    if (adapterMatch) {
+      if (currentAdapter && currentAdapter.ipv4) {
+        adapters.push(currentAdapter)
+      }
+      currentAdapter = {
+        name: adapterMatch[2].trim().replace(/:$/, ''),
+        dns: []
+      }
+      isDnsMultiline = false
+      continue
+    }
+
+    if (!currentAdapter) continue
+
+    // IPv4 주소
+    const ipv4Match = line.match(/IPv4 주소[\s.]*:\s*(.+?)(?:\(|$)/)
+    if (ipv4Match) {
+      currentAdapter.ipv4 = ipv4Match[1].trim()
+      continue
+    }
+
+    // 서브넷 마스크
+    const subnetMatch = line.match(/서브넷 마스크[\s.]*:\s*(.+)/)
+    if (subnetMatch) {
+      currentAdapter.subnet = subnetMatch[1].trim()
+      continue
+    }
+
+    // 기본 게이트웨이
+    const gatewayMatch = line.match(/기본 게이트웨이[\s.]*:\s*(.+)/)
+    if (gatewayMatch) {
+      const gateway = gatewayMatch[1].trim()
+      if (gateway && gateway !== '') {
+        currentAdapter.gateway = gateway
+      }
+      continue
+    }
+
+    // DNS 서버 (첫 줄)
+    const dnsMatch = line.match(/DNS 서버[\s.]*:\s*(.+)/)
+    if (dnsMatch) {
+      const dns = dnsMatch[1].trim()
+      if (dns && dns !== '') {
+        currentAdapter.dns.push(dns)
+        isDnsMultiline = true
+      }
+      continue
+    }
+
+    // DNS 서버 (추가 줄들 - 들여쓰기로 시작)
+    if (isDnsMultiline && line.match(/^\s{20,}(.+)/)) {
+      const additionalDns = line.trim()
+      if (additionalDns && additionalDns !== '') {
+        currentAdapter.dns.push(additionalDns)
+        continue
+      }
+    }
+
+    // 빈 줄이면 DNS 멀티라인 종료
+    if (line.trim() === '') {
+      isDnsMultiline = false
+    }
   }
-  return mask.join('.')
+
+  // 마지막 어댑터 추가
+  if (currentAdapter && currentAdapter.ipv4) {
+    adapters.push(currentAdapter)
+  }
+
+  return adapters
+}
+
+/**
+ * Get-NetAdapter를 사용하여 어댑터 이름 → Index 매핑
+ */
+async function getAdapterIndexMapping(): Promise<Map<string, number>> {
+  const command =
+    'powershell -Command "Get-NetAdapter | Select-Object Name, InterfaceIndex | ConvertTo-Json"'
+
+  try {
+    const { stdout } = await execCommand(command)
+    const data = JSON.parse(stdout.trim())
+    const adapters = Array.isArray(data) ? data : [data]
+
+    const mapping = new Map<number, number>()
+    adapters.forEach((adapter: any) => {
+      if (adapter.Name && adapter.InterfaceIndex) {
+        mapping.set(adapter.Name, adapter.InterfaceIndex)
+      }
+    })
+
+    return mapping
+  } catch (error) {
+    console.error('Failed to get adapter index mapping:', error)
+    return new Map()
+  }
 }
 
 /**
  * IP 변경 관련 IPC 핸들러 등록
  */
 export function registerIPHandlers(): void {
-  // 네트워크 어댑터 목록 조회 (IPv4 주소를 가진 어댑터만)
+  // 네트워크 어댑터 목록 조회 (ipconfig /all 사용)
   ipcMain.handle('ip:getAdapters', async (): Promise<IPResult> => {
     try {
-      // Get-NetIPAddress를 사용하여 IPv4 주소를 가진 어댑터 정보(Alias, Index)를 가져옴
-      const command =
-        'powershell -Command "Get-NetIPAddress -AddressFamily IPv4 | Select-Object InterfaceAlias, InterfaceIndex, IPAddress | ConvertTo-Json"'
+      // ipconfig /all 실행
+      const { stdout } = await execCommand('ipconfig /all')
+      const parsedAdapters = parseIpconfigAll(stdout)
 
-      const { stdout } = await execCommand(command)
-      const adaptersData = JSON.parse(stdout.trim())
+      // IPv4 주소가 있는 어댑터만 필터링
+      const validAdapters = parsedAdapters.filter((a) => a.ipv4)
 
-      // JSON이 단일 객체일 경우 배열로 변환
-      const rawAdapters = Array.isArray(adaptersData) ? adaptersData : [adaptersData].filter((a) => a.InterfaceAlias)
-
-      // Alias를 name으로, Index를 index로 매핑 (중복 Index 제거)
-      const uniqueAdapters = new Map<number, NetworkAdapter>()
-      rawAdapters.forEach((adapter: any) => {
-        // 이미 IP 주소를 가지고 있는 어댑터만 목록에 표시
-        if (adapter.IPAddress && !uniqueAdapters.has(adapter.InterfaceIndex)) {
-          uniqueAdapters.set(adapter.InterfaceIndex, {
-            // UI 렌더링을 위해 Alias 사용
-            name: adapter.InterfaceAlias,
-            index: adapter.InterfaceIndex,
-            // description 필드는 Get-NetIPAddress에서 가져오기 어려우므로 비워둡니다.
-            description: adapter.InterfaceAlias
-          })
-        }
-      })
-
-      const result: NetworkAdapter[] = Array.from(uniqueAdapters.values())
-
-      if (result.length === 0) {
+      if (validAdapters.length === 0) {
         return {
           success: false,
           error: 'IPv4 주소가 할당된 어댑터를 찾을 수 없습니다.',
           adapters: []
         }
       }
+
+      // Index 매핑 가져오기
+      const indexMapping = await getAdapterIndexMapping()
+
+      // 최종 어댑터 목록 생성
+      const result: NetworkAdapter[] = validAdapters.map((adapter) => ({
+        name: adapter.name,
+        index: indexMapping.get(adapter.name) || 0,
+        description: adapter.name
+      }))
 
       return {
         success: true,
@@ -75,79 +172,79 @@ export function registerIPHandlers(): void {
     }
   })
 
-  // 현재 IP 설정 조회 (병렬 실행으로 성능 최적화)
+  // 현재 IP 설정 조회 (ipconfig /all 사용)
   ipcMain.handle('ip:getCurrentConfig', async (_event, adapterIndex: number): Promise<IPResult> => {
-    // PowerShell 명령어 정의
-    const ipCommand = `powershell -Command "Get-NetIPAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object IPAddress, PrefixLength | ConvertTo-Json"`
-    const gatewayCommand = `powershell -Command "Get-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Select-Object NextHop | ConvertTo-Json"`
-    const dnsCommand = `powershell -Command "Get-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object ServerAddresses | ConvertTo-Json"`
+    try {
+      // Index로 어댑터 이름 찾기
+      const indexMapping = await getAdapterIndexMapping()
+      let adapterName: string | undefined
 
-    // 3개 명령을 병렬로 실행 (Promise.allSettled 사용)
-    const [ipResult, gatewayResult, dnsResult] = await Promise.allSettled([
-      execCommand(ipCommand),
-      execCommand(gatewayCommand),
-      execCommand(dnsCommand)
-    ])
-
-    // 1. IP 주소 데이터 추출
-    let ipRawData: any = {}
-    if (ipResult.status === 'fulfilled') {
-      try {
-        const ipData = ipResult.value.stdout.trim() ? JSON.parse(ipResult.value.stdout.trim()) : []
-        ipRawData = Array.isArray(ipData) ? ipData.find((d) => d.IPAddress) : ipData
-      } catch (e) {
-        console.log(`[Index ${adapterIndex}] IP parsing failed, proceeding with empty data.`)
+      for (const [name, index] of indexMapping.entries()) {
+        if (index === adapterIndex) {
+          adapterName = name
+          break
+        }
       }
-    } else {
-      console.log(`[Index ${adapterIndex}] IP lookup failed:`, ipResult.reason)
-    }
 
-    // 2. 게이트웨이 데이터 추출
-    let actualGateway = ''
-    if (gatewayResult.status === 'fulfilled') {
-      try {
-        const gatewayRawData = gatewayResult.value.stdout.trim() ? JSON.parse(gatewayResult.value.stdout.trim()) : []
-        const gatewayData = Array.isArray(gatewayRawData) ? gatewayRawData : [gatewayRawData]
-        actualGateway = gatewayData.find((route: any) => route.NextHop && route.NextHop !== '0.0.0.0')?.NextHop || ''
-      } catch (e) {
-        console.log(`[Index ${adapterIndex}] Gateway parsing failed, proceeding with empty data.`)
+      if (!adapterName) {
+        return {
+          success: false,
+          error: '어댑터를 찾을 수 없습니다.'
+        }
       }
-    } else {
-      console.log(`[Index ${adapterIndex}] Gateway lookup failed:`, gatewayResult.reason)
-    }
 
-    // 3. DNS 서버 데이터 추출
-    let dnsData: any = { ServerAddresses: [] }
-    if (dnsResult.status === 'fulfilled') {
-      try {
-        dnsData = dnsResult.value.stdout.trim() ? JSON.parse(dnsResult.value.stdout.trim()) : { ServerAddresses: [] }
-      } catch (e) {
-        console.log(`[Index ${adapterIndex}] DNS parsing failed, proceeding with empty data.`)
+      // ipconfig /all 실행 및 파싱
+      const { stdout } = await execCommand('ipconfig /all')
+      const parsedAdapters = parseIpconfigAll(stdout)
+
+      // 해당 어댑터 찾기
+      const adapter = parsedAdapters.find((a) => a.name === adapterName)
+
+      if (!adapter) {
+        return {
+          success: true,
+          currentConfig: {
+            ip: '',
+            subnet: '255.255.255.0',
+            gateway: '',
+            dns1: '',
+            dns2: ''
+          }
+        }
       }
-    } else {
-      console.log(`[Index ${adapterIndex}] DNS lookup failed:`, dnsResult.reason)
-    }
 
-    // 최종 설정 객체 생성
-    const currentConfig: IPConfig = {
-      ip: ipRawData?.IPAddress || '',
-      subnet: ipRawData?.PrefixLength ? prefixToSubnet(ipRawData.PrefixLength) : '255.255.255.0',
-      gateway: actualGateway,
-      dns1: dnsData.ServerAddresses?.[0] || '',
-      dns2: dnsData.ServerAddresses?.[1] || ''
-    }
+      // 최종 설정 객체 생성
+      const currentConfig: IPConfig = {
+        ip: adapter.ipv4 || '',
+        subnet: adapter.subnet || '255.255.255.0',
+        gateway: adapter.gateway || '',
+        dns1: adapter.dns[0] || '',
+        dns2: adapter.dns[1] || ''
+      }
 
-    // IP 주소가 없어도 (DHCP 상태 또는 미할당 상태여도) 성공적으로 현재 설정을 반환
-    return {
-      success: true,
-      currentConfig
+      return {
+        success: true,
+        currentConfig
+      }
+    } catch (error) {
+      console.error('Failed to get current config:', error)
+      return {
+        success: true,
+        currentConfig: {
+          ip: '',
+          subnet: '255.255.255.0',
+          gateway: '',
+          dns1: '',
+          dns2: ''
+        }
+      }
     }
   })
 
-  // IP 설정 변경 (InterfaceAlias 대신 InterfaceIndex 사용)
+  // IP 설정 변경 (netsh 사용)
   ipcMain.handle('ip:setConfig', async (_event, adapterIndex: number, config: IPConfig): Promise<IPResult> => {
     try {
-      // ... (유효성 검사 로직은 변경 없음)
+      // 유효성 검사
       const ipValidation = Validator.isValidIP(config.ip)
       if (!ipValidation.valid) {
         return { success: false, error: ipValidation.error }
@@ -170,26 +267,37 @@ export function registerIPHandlers(): void {
         }
       }
 
-      // 기존 IP 제거 후 새 IP 설정
-      try {
-        await execCommand(
-          `powershell -Command "Remove-NetIPAddress -InterfaceIndex ${adapterIndex} -Confirm:$false -ErrorAction SilentlyContinue"`
-        )
-        await execCommand(
-          `powershell -Command "Remove-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -Confirm:$false -ErrorAction SilentlyContinue"`
-        )
-      } catch {
-        // 기존 설정이 없을 수 있으므로 에러 무시
+      // Index로 어댑터 이름 찾기
+      const indexMapping = await getAdapterIndexMapping()
+      let adapterName: string | undefined
+
+      for (const [name, index] of indexMapping.entries()) {
+        if (index === adapterIndex) {
+          adapterName = name
+          break
+        }
       }
 
-      // IP 주소 설정
-      const ipCommand = `powershell -Command "New-NetIPAddress -InterfaceIndex ${adapterIndex} -IPAddress '${config.ip}' -PrefixLength 24 -DefaultGateway '${config.gateway}' -ErrorAction Stop"`
+      if (!adapterName) {
+        return {
+          success: false,
+          error: '어댑터를 찾을 수 없습니다.'
+        }
+      }
+
+      // netsh를 사용하여 IP 설정
+      // IP 주소 및 게이트웨이 설정
+      const ipCommand = `netsh interface ip set address name="${adapterName}" static ${config.ip} ${config.subnet} ${config.gateway}`
       await execCommand(ipCommand)
 
       // DNS 서버 설정
-      const dnsServers = config.dns2 ? `'${config.dns1}','${config.dns2}'` : `'${config.dns1}'`
-      const dnsCommand = `powershell -Command "Set-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -ServerAddresses ${dnsServers}"`
-      await execCommand(dnsCommand)
+      const dns1Command = `netsh interface ip set dns name="${adapterName}" static ${config.dns1}`
+      await execCommand(dns1Command)
+
+      if (config.dns2) {
+        const dns2Command = `netsh interface ip add dns name="${adapterName}" ${config.dns2} index=2`
+        await execCommand(dns2Command)
+      }
 
       return {
         success: true,
