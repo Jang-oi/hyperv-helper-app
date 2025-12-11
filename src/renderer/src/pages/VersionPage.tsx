@@ -98,8 +98,33 @@ export default function VersionPage() {
 
   // 업데이트 다운로드 (electron-updater)
   const handleUpdate = async () => {
-    if (!versionInfo?.latestVersion) return
+    // latestVersion이 없으면 먼저 업데이트 확인
+    if (!versionInfo?.latestVersion) {
+      toast.info('업데이트를 확인하는 중...')
+      setChecking(true)
+      try {
+        const checkResult = await window.api.version.checkForUpdates()
+        if (!checkResult.success) {
+          toast.error(checkResult.error || '업데이트 확인 실패')
+          setChecking(false)
+          return
+        }
+        if (!checkResult.updateAvailable) {
+          toast.success('최신 버전입니다.')
+          setChecking(false)
+          return
+        }
+        await loadVersionInfo()
+      } catch (error) {
+        toast.error('업데이트 확인 중 오류가 발생했습니다.')
+        setChecking(false)
+        return
+      } finally {
+        setChecking(false)
+      }
+    }
 
+    // 업데이트 다운로드 시작
     setUpdating(true)
     setDownloading(true)
     setDownloadProgress(0)
