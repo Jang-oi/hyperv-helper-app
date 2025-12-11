@@ -93,3 +93,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 성능 최적화를 위한 설정 */
+@layer utilities {
+  /* 애니메이션 성능 최적화 */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  /* GPU 가속 활성화 */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
+/* prefers-reduced-motion 지원 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
