@@ -75,50 +75,57 @@ export function registerIPHandlers(): void {
     }
   })
 
-  // 현재 IP 설정 조회 (오류 발생 시 빈 값으로 처리하도록 try/catch 블록 추가)
+  // 현재 IP 설정 조회 (병렬 실행으로 성능 최적화)
   ipcMain.handle('ip:getCurrentConfig', async (_event, adapterIndex: number): Promise<IPResult> => {
-    // 기본값 초기화
+    // PowerShell 명령어 정의
+    const ipCommand = `powershell -Command "Get-NetIPAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object IPAddress, PrefixLength | ConvertTo-Json"`
+    const gatewayCommand = `powershell -Command "Get-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Select-Object NextHop | ConvertTo-Json"`
+    const dnsCommand = `powershell -Command "Get-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object ServerAddresses | ConvertTo-Json"`
+
+    // 3개 명령을 병렬로 실행 (Promise.allSettled 사용)
+    const [ipResult, gatewayResult, dnsResult] = await Promise.allSettled([
+      execCommand(ipCommand),
+      execCommand(gatewayCommand),
+      execCommand(dnsCommand)
+    ])
+
+    // 1. IP 주소 데이터 추출
     let ipRawData: any = {}
+    if (ipResult.status === 'fulfilled') {
+      try {
+        const ipData = ipResult.value.stdout.trim() ? JSON.parse(ipResult.value.stdout.trim()) : []
+        ipRawData = Array.isArray(ipData) ? ipData.find((d) => d.IPAddress) : ipData
+      } catch (e) {
+        console.log(`[Index ${adapterIndex}] IP parsing failed, proceeding with empty data.`)
+      }
+    } else {
+      console.log(`[Index ${adapterIndex}] IP lookup failed:`, ipResult.reason)
+    }
+
+    // 2. 게이트웨이 데이터 추출
     let actualGateway = ''
+    if (gatewayResult.status === 'fulfilled') {
+      try {
+        const gatewayRawData = gatewayResult.value.stdout.trim() ? JSON.parse(gatewayResult.value.stdout.trim()) : []
+        const gatewayData = Array.isArray(gatewayRawData) ? gatewayRawData : [gatewayRawData]
+        actualGateway = gatewayData.find((route: any) => route.NextHop && route.NextHop !== '0.0.0.0')?.NextHop || ''
+      } catch (e) {
+        console.log(`[Index ${adapterIndex}] Gateway parsing failed, proceeding with empty data.`)
+      }
+    } else {
+      console.log(`[Index ${adapterIndex}] Gateway lookup failed:`, gatewayResult.reason)
+    }
+
+    // 3. DNS 서버 데이터 추출
     let dnsData: any = { ServerAddresses: [] }
-
-    // 1. IP 주소 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
-    try {
-      const ipCommand = `powershell -Command "Get-NetIPAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object IPAddress, PrefixLength | ConvertTo-Json"`
-      const { stdout } = await execCommand(ipCommand)
-      const ipData = stdout.trim() ? JSON.parse(stdout.trim()) : []
-
-      // IP 주소 데이터가 배열일 경우 (여러 개 할당된 경우 첫 번째 사용)
-      ipRawData = Array.isArray(ipData) ? ipData.find((d) => d.IPAddress) : ipData
-    } catch (e) {
-      console.log(`[Index ${adapterIndex}] IP lookup failed, proceeding with empty data.`)
-    }
-
-    // 2. 게이트웨이 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
-    try {
-      const gatewayCommand = `powershell -Command "Get-NetRoute -InterfaceIndex ${adapterIndex} -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Select-Object NextHop | ConvertTo-Json"`
-      const { stdout: gatewayStdout } = await execCommand(gatewayCommand)
-
-      // 출력된 JSON이 비어있을 수 있음
-      const gatewayRawData = gatewayStdout.trim() ? JSON.parse(gatewayStdout.trim()) : []
-
-      const gatewayData = Array.isArray(gatewayRawData) ? gatewayRawData : [gatewayRawData]
-
-      // NextHop이 0.0.0.0이 아닌 게이트웨이를 찾습니다.
-      actualGateway = gatewayData.find((route: any) => route.NextHop && route.NextHop !== '0.0.0.0')?.NextHop || ''
-    } catch (e) {
-      console.log(`[Index ${adapterIndex}] Gateway lookup failed, proceeding with empty data.`)
-    }
-
-    // 3. DNS 서버 조회 (오류 시에도 다음 로직이 실행되도록 개별 try/catch 사용)
-    try {
-      const dnsCommand = `powershell -Command "Get-DnsClientServerAddress -InterfaceIndex ${adapterIndex} -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object ServerAddresses | ConvertTo-Json"`
-      const { stdout: dnsStdout } = await execCommand(dnsCommand)
-
-      // 출력된 JSON이 비어있을 수 있음
-      dnsData = dnsStdout.trim() ? JSON.parse(dnsStdout.trim()) : { ServerAddresses: [] }
-    } catch (e) {
-      console.log(`[Index ${adapterIndex}] DNS lookup failed, proceeding with empty data.`)
+    if (dnsResult.status === 'fulfilled') {
+      try {
+        dnsData = dnsResult.value.stdout.trim() ? JSON.parse(dnsResult.value.stdout.trim()) : { ServerAddresses: [] }
+      } catch (e) {
+        console.log(`[Index ${adapterIndex}] DNS parsing failed, proceeding with empty data.`)
+      }
+    } else {
+      console.log(`[Index ${adapterIndex}] DNS lookup failed:`, dnsResult.reason)
     }
 
     // 최종 설정 객체 생성
