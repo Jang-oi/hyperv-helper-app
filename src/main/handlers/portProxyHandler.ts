@@ -1,24 +1,13 @@
 import { ipcMain } from 'electron'
+import type { PortProxyResult, ProxyRule } from '../../shared/types'
 import { execCommand } from '../utils/commandExecutor'
-import type { ProxyRule, PortProxyResult } from '../../shared/types'
 
 function parseNetshOutputToRules(stdout: string): ProxyRule[] {
   const rules: ProxyRule[] = []
   const lines = stdout.split('\n')
 
   // 헤더 및 구분선에 포함될 수 있는 키워드들
-  const headerKeywords = [
-    'ipv4',
-    '주소',
-    '포트',
-    'Address',
-    'Port',
-    'Listen',
-    'Connect',
-    '수신',
-    '대기',
-    '연결'
-  ]
+  const headerKeywords = ['ipv4', '주소', '포트', 'Address', 'Port', 'Listen', 'Connect', '수신', '대기', '연결']
 
   for (const line of lines) {
     const trimmed = line.trim()
@@ -36,9 +25,7 @@ function parseNetshOutputToRules(stdout: string): ProxyRule[] {
     if (parts.length < 4) continue
 
     // 헤더 키워드가 포함된 줄 스킵
-    const hasHeaderKeyword = parts.some((part) =>
-      headerKeywords.some((keyword) => part.toLowerCase().includes(keyword.toLowerCase()))
-    )
+    const hasHeaderKeyword = parts.some((part) => headerKeywords.some((keyword) => part.toLowerCase().includes(keyword.toLowerCase())))
     if (hasHeaderKeyword) continue
 
     // 포트 번호가 실제 숫자인지 확인 (parts[1]과 parts[3]이 포트)

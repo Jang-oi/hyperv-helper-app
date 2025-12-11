@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Info, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import Loading from '@/components/Loading'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +17,6 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import Loading from '@/components/Loading'
 import type { ProxyRule } from '../../../shared/types'
 
 export default function PortProxyPage() {
@@ -54,14 +54,9 @@ export default function PortProxyPage() {
 
         // 배열을 간결한 테이블 형식으로 변환하여 Textarea에 표시
         if (result.rules.length > 0) {
-          const header =
-            '주소            포트        주소            포트\n' +
-            '--------------- ----------  --------------- ----------\n'
+          const header = '주소            포트        주소            포트\n' + '--------------- ----------  --------------- ----------\n'
           const body = result.rules
-            .map(
-              (r) =>
-                `${r.listenAddress.padEnd(15)} ${r.listenPort.padEnd(11)} ${r.connectAddress.padEnd(15)} ${r.connectPort}`
-            )
+            .map((r) => `${r.listenAddress.padEnd(15)} ${r.listenPort.padEnd(11)} ${r.connectAddress.padEnd(15)} ${r.connectPort}`)
             .join('\n')
           setRulesText(header + body)
         } else {
@@ -79,10 +74,6 @@ export default function PortProxyPage() {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    loadRules()
-  }, [])
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -284,194 +275,194 @@ export default function PortProxyPage() {
 
         <h2 className="text-2xl font-bold text-foreground mb-5">PortProxy 설정</h2>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full grid grid-cols-4 h-10">
-          <TabsTrigger value="default">프리셋</TabsTrigger>
-          <TabsTrigger value="custom">커스텀</TabsTrigger>
-          <TabsTrigger value="paste">일괄등록</TabsTrigger>
-          <TabsTrigger value="current">현재 규칙</TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="w-full grid grid-cols-4 h-10">
+            <TabsTrigger value="default">프리셋</TabsTrigger>
+            <TabsTrigger value="custom">커스텀</TabsTrigger>
+            <TabsTrigger value="paste">일괄등록</TabsTrigger>
+            <TabsTrigger value="current">현재 규칙</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="default" className="space-y-3 mt-4">
-          {/* 프리셋 카드들 (기존 코드 유지) */}
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-32 flex-shrink-0">
-                <h3 className="text-sm font-semibold text-foreground">WAS Dev</h3>
-                <p className="text-xs text-muted-foreground">80, 443, 8082</p>
-              </div>
-              <Input
-                placeholder="IP/Host"
-                value={wasDevHost}
-                onChange={(e) => setWasDevHost(e.target.value)}
-                className="flex-1 h-9"
-                disabled={loading}
-              />
-              <Button onClick={addWasDevRules} size="sm" className="h-9 px-4" disabled={loading}>
-                추가
-              </Button>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-32 flex-shrink-0">
-                <h3 className="text-sm font-semibold text-foreground">SAP Dev</h3>
-                <p className="text-xs text-muted-foreground">3200, 3300</p>
-              </div>
-              <Input
-                placeholder="IP/Host"
-                value={sapDevHost}
-                onChange={(e) => setSapDevHost(e.target.value)}
-                className="flex-1 h-9"
-                disabled={loading}
-              />
-              <Button onClick={addSapDevRules} size="sm" className="h-9 px-4" disabled={loading}>
-                추가
-              </Button>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-32 flex-shrink-0">
-                <h3 className="text-sm font-semibold text-foreground">SAP QAS</h3>
-                <p className="text-xs text-muted-foreground">3201→3200...</p>
-              </div>
-              <Input
-                placeholder="IP/Host"
-                value={sapQasHost}
-                onChange={(e) => setSapQasHost(e.target.value)}
-                className="flex-1 h-9"
-                disabled={loading}
-              />
-              <Button onClick={addSapQasRules} size="sm" className="h-9 px-4" disabled={loading}>
-                추가
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="custom" className="mt-4 space-y-5">
-          {/* 규칙 추가 섹션 */}
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">단건 규칙 추가</h3>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">리슨 포트</label>
+          <TabsContent value="default" className="space-y-3 mt-4">
+            {/* 프리셋 카드들 (기존 코드 유지) */}
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-32 flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-foreground">WAS Dev</h3>
+                  <p className="text-xs text-muted-foreground">80, 443, 8082</p>
+                </div>
                 <Input
-                  type="text"
-                  placeholder="8080"
-                  value={newRule.listenPort}
-                  onChange={(e) => setNewRule({ ...newRule, listenPort: e.target.value })}
-                  className="h-9"
+                  placeholder="IP/Host"
+                  value={wasDevHost}
+                  onChange={(e) => setWasDevHost(e.target.value)}
+                  className="flex-1 h-9"
                   disabled={loading}
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">커넥트 주소</label>
-                <Input
-                  type="text"
-                  placeholder="192.168.1.100"
-                  value={newRule.connectAddress}
-                  onChange={(e) => setNewRule({ ...newRule, connectAddress: e.target.value })}
-                  className="h-9"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">커넥트 포트</label>
-                <Input
-                  type="text"
-                  placeholder="80"
-                  value={newRule.connectPort}
-                  onChange={(e) => setNewRule({ ...newRule, connectPort: e.target.value })}
-                  className="h-9"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            <Button onClick={addCustomRule} className="mt-3 w-full h-9" size="sm" disabled={loading}>
-              <Plus className="w-4 h-4 mr-2" /> 규칙 추가
-            </Button>
-          </Card>
-
-          <hr />
-
-          {/* 💡 규칙 삭제 섹션 */}
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 text-red-600">규칙 삭제 (Port 기준)</h3>
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-foreground mb-1.5">삭제할 리슨 포트</label>
-                <Input
-                  type="number"
-                  placeholder="예: 8080"
-                  value={deletePort}
-                  onChange={(e) => setDeletePort(e.target.value)}
-                  className="h-9"
-                  disabled={loading}
-                />
-              </div>
-              <Button onClick={handleDeleteRule} className="h-9 w-32" variant="destructive" size="sm" disabled={loading || !deletePort}>
-                <Trash2 className="w-4 h-4 mr-2" /> 삭제
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="paste" className="mt-4">
-          <Card className="p-4">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-semibold text-foreground">netsh 출력 붙여넣기 (일괄 등록)</h3>
-              <Button
-                onClick={() => setShowResetDialog(true)}
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                disabled={loading}
-              >
-                <Trash2 className="w-3 h-3 mr-1" /> 전체 초기화
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              <code className="bg-muted px-1.5 py-0.5 rounded text-xs">netsh int portproxy show all</code> 결과를 붙여넣으세요.
-            </p>
-            <Textarea
-              placeholder="Listen on ipv4: ... Connect to ipv4: ..."
-              value={pasteText}
-              onChange={(e) => setPasteText(e.target.value)}
-              rows={8}
-              className="font-mono text-xs mb-3"
-              disabled={loading}
-            />
-            <Button onClick={applyFromPaste} className="w-full h-9" size="sm" disabled={loading}>
-              <Plus className="w-4 h-4 mr-2" /> 붙여넣기 내용 적용
-            </Button>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="current" className="mt-4">
-          <Card className="p-4 mb-4 bg-blue-50 border-blue-200">
-            <div className="flex items-start gap-2">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <h4 className="text-sm font-semibold text-blue-900 mb-1.5">DNS 재연결</h4>
-                <p className="text-xs text-blue-700 mb-3">기존 연결이 끊겼을 때, 현재 목록의 규칙들을 다시 적용합니다.</p>
-                <Button onClick={reapplyRules} disabled={rules.length === 0 || loading} size="sm" className="h-9 w-full">
-                  <RefreshCw className="w-4 h-4 mr-2" /> 재적용
+                <Button onClick={addWasDevRules} size="sm" className="h-9 px-4" disabled={loading}>
+                  추가
                 </Button>
               </div>
-            </div>
-          </Card>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-32 flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-foreground">SAP Dev</h3>
+                  <p className="text-xs text-muted-foreground">3200, 3300</p>
+                </div>
+                <Input
+                  placeholder="IP/Host"
+                  value={sapDevHost}
+                  onChange={(e) => setSapDevHost(e.target.value)}
+                  className="flex-1 h-9"
+                  disabled={loading}
+                />
+                <Button onClick={addSapDevRules} size="sm" className="h-9 px-4" disabled={loading}>
+                  추가
+                </Button>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-32 flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-foreground">SAP QAS</h3>
+                  <p className="text-xs text-muted-foreground">3201→3200...</p>
+                </div>
+                <Input
+                  placeholder="IP/Host"
+                  value={sapQasHost}
+                  onChange={(e) => setSapQasHost(e.target.value)}
+                  className="flex-1 h-9"
+                  disabled={loading}
+                />
+                <Button onClick={addSapQasRules} size="sm" className="h-9 px-4" disabled={loading}>
+                  추가
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
 
-          <h3 className="text-sm font-semibold text-foreground mb-3">등록된 규칙 목록</h3>
-          <Textarea
-            value={rulesText}
-            readOnly
-            rows={15}
-            className="font-mono text-xs resize-none bg-black text-green-400 border-gray-700"
-          />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="custom" className="mt-4 space-y-5">
+            {/* 규칙 추가 섹션 */}
+            <Card className="p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-3">단건 규칙 추가</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">리슨 포트</label>
+                  <Input
+                    type="text"
+                    placeholder="8080"
+                    value={newRule.listenPort}
+                    onChange={(e) => setNewRule({ ...newRule, listenPort: e.target.value })}
+                    className="h-9"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">커넥트 주소</label>
+                  <Input
+                    type="text"
+                    placeholder="192.168.1.100"
+                    value={newRule.connectAddress}
+                    onChange={(e) => setNewRule({ ...newRule, connectAddress: e.target.value })}
+                    className="h-9"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">커넥트 포트</label>
+                  <Input
+                    type="text"
+                    placeholder="80"
+                    value={newRule.connectPort}
+                    onChange={(e) => setNewRule({ ...newRule, connectPort: e.target.value })}
+                    className="h-9"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <Button onClick={addCustomRule} className="mt-3 w-full h-9" size="sm" disabled={loading}>
+                <Plus className="w-4 h-4 mr-2" /> 규칙 추가
+              </Button>
+            </Card>
+
+            <hr />
+
+            {/* 💡 규칙 삭제 섹션 */}
+            <Card className="p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-3 text-red-600">규칙 삭제 (Port 기준)</h3>
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">삭제할 리슨 포트</label>
+                  <Input
+                    type="number"
+                    placeholder="예: 8080"
+                    value={deletePort}
+                    onChange={(e) => setDeletePort(e.target.value)}
+                    className="h-9"
+                    disabled={loading}
+                  />
+                </div>
+                <Button onClick={handleDeleteRule} className="h-9 w-32" variant="destructive" size="sm" disabled={loading || !deletePort}>
+                  <Trash2 className="w-4 h-4 mr-2" /> 삭제
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="paste" className="mt-4">
+            <Card className="p-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-semibold text-foreground">netsh 출력 붙여넣기 (일괄 등록)</h3>
+                <Button
+                  onClick={() => setShowResetDialog(true)}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  disabled={loading}
+                >
+                  <Trash2 className="w-3 h-3 mr-1" /> 전체 초기화
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                <code className="bg-muted px-1.5 py-0.5 rounded text-xs">netsh int portproxy show all</code> 결과를 붙여넣으세요.
+              </p>
+              <Textarea
+                placeholder="Listen on ipv4: ... Connect to ipv4: ..."
+                value={pasteText}
+                onChange={(e) => setPasteText(e.target.value)}
+                rows={8}
+                className="font-mono text-xs mb-3"
+                disabled={loading}
+              />
+              <Button onClick={applyFromPaste} className="w-full h-9" size="sm" disabled={loading}>
+                <Plus className="w-4 h-4 mr-2" /> 붙여넣기 내용 적용
+              </Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="current" className="mt-4">
+            <Card className="p-4 mb-4 bg-blue-50 border-blue-200">
+              <div className="flex items-start gap-2">
+                <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-blue-900 mb-1.5">DNS 재연결</h4>
+                  <p className="text-xs text-blue-700 mb-3">기존 연결이 끊겼을 때, 현재 목록의 규칙들을 다시 적용합니다.</p>
+                  <Button onClick={reapplyRules} disabled={rules.length === 0 || loading} size="sm" className="h-9 w-full">
+                    <RefreshCw className="w-4 h-4 mr-2" /> 재적용
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <h3 className="text-sm font-semibold text-foreground mb-3">등록된 규칙 목록</h3>
+            <Textarea
+              value={rulesText}
+              readOnly
+              rows={15}
+              className="font-mono text-xs resize-none bg-black text-green-400 border-gray-700"
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* 전체 초기화 확인 AlertDialog */}
@@ -481,8 +472,7 @@ export default function PortProxyPage() {
             <AlertDialogTitle>전체 초기화 확인</AlertDialogTitle>
             <AlertDialogDescription>
               정말 모든 PortProxy 규칙을 삭제하시겠습니까?
-              <br />
-              이 작업은 되돌릴 수 없습니다.
+              <br />이 작업은 되돌릴 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,9 +1,9 @@
 // ipHandler.ts 파일
 
 import { ipcMain } from 'electron'
+import type { IPConfig, IPResult, NetworkAdapter } from '../../shared/types'
 import { execCommand } from '../utils/commandExecutor'
 import { Validator } from '../utils/validator'
-import type { NetworkAdapter, IPConfig, IPResult } from '../../shared/types'
 
 /**
  * Prefix Length를 서브넷 마스크로 변환하는 헬퍼 함수

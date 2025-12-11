@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle, Download, RefreshCw, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
+import Loading from '@/components/Loading'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import Loading from '@/components/Loading'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import type { GitHubRelease, VersionInfo } from '../../../shared/types'
 
 export default function VersionPage() {
@@ -214,9 +214,7 @@ export default function VersionPage() {
 
   return (
     <div className="px-4">
-      {(checking || (updating && !downloading)) && (
-        <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />
-      )}
+      {(checking || (updating && !downloading)) && <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />}
 
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-2xl font-bold text-foreground">버전 정보</h2>
@@ -284,28 +282,18 @@ export default function VersionPage() {
                 return (
                   <Card key={release.tag_name} className="p-5">
                     <div className="flex items-center gap-2 mb-3">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {release.name || release.tag_name}
-                      </h4>
+                      <h4 className="text-base font-semibold text-foreground">{release.name || release.tag_name}</h4>
                       {release.tag_name.replace(/^v/, '') === versionInfo.currentVersion && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                          현재
-                        </span>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">현재</span>
                       )}
-                      <span className="text-sm text-muted-foreground ml-auto">
-                        {formatDate(release.published_at)}
-                      </span>
+                      <span className="text-sm text-muted-foreground ml-auto">{formatDate(release.published_at)}</span>
                     </div>
 
                     {/* 카테고리별 변경사항 표시 */}
                     <div className="space-y-3">
                       {changeLogs.map((log, logIndex) => (
                         <div key={logIndex}>
-                          {changeLogs.length > 1 && (
-                            <h5 className="text-sm font-semibold text-foreground mb-1.5">
-                              {log.category}
-                            </h5>
-                          )}
+                          {changeLogs.length > 1 && <h5 className="text-sm font-semibold text-foreground mb-1.5">{log.category}</h5>}
                           <ul className="space-y-1.5">
                             {log.items.map((item, itemIndex) => (
                               <li key={itemIndex} className="flex items-start gap-2 text-sm text-foreground">

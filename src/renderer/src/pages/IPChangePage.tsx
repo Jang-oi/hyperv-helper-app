@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { NetworkAdapter, IPConfig } from '../../../shared/types'
+import type { IPConfig, NetworkAdapter } from '../../../shared/types'
 
 export default function IPChangePage() {
   const [adapters, setAdapters] = useState<NetworkAdapter[]>([])
