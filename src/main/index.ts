@@ -10,12 +10,6 @@ let mainWindow: BrowserWindow
 let tray: Tray
 let isQuiting = false
 
-// GPU 가속 최적화 설정 (저사양 PC 성능 개선)
-app.commandLine.appendSwitch('disable-frame-rate-limit')
-app.commandLine.appendSwitch('enable-gpu-rasterization')
-app.commandLine.appendSwitch('enable-zero-copy')
-app.commandLine.appendSwitch('ignore-gpu-blocklist')
-
 async function initStore() {
   const Store = (await import('electron-store')).default
   store = new Store()
@@ -91,12 +85,7 @@ function createWindow(): void {
     icon: uniIcon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      // 성능 최적화 설정
-      nodeIntegration: false,
-      contextIsolation: true,
-      // 하드웨어 가속 활성화
-      offscreen: false
+      sandbox: false
     }
   })
 

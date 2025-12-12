@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, Download, RefreshCw, RotateCw } from 'lucide-react'
+import { CheckCircle, Download, RotateCw } from 'lucide-react'
 import { toast } from 'sonner'
 import Loading from '@/components/Loading'
 import { Button } from '@/components/ui/button'
@@ -16,8 +16,10 @@ export default function VersionPage() {
   const [downloading, setDownloading] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(0)
   const [updateDownloaded, setUpdateDownloaded] = useState(false)
+  // [추가] autoUpdater가 업데이트 가능 상태인지 추적하는 상태
+  const [canDownload, setCanDownload] = useState(false)
 
-  // 버전 정보 로드
+  // 버전 정보 로드 (GitHub API)
   const loadVersionInfo = async () => {
     setLoading(true)
     try {
@@ -34,13 +36,37 @@ export default function VersionPage() {
     }
   }
 
+  // [추가] 업데이트 확인 공통 로직 (isManual: 수동 클릭 여부)
+  const performUpdateCheck = async () => {
+    try {
+      const result = await window.api.version.checkForUpdates()
+
+      if (result.success) {
+        if (result.updateAvailable) {
+          setCanDownload(true)
+        } else {
+          setCanDownload(false)
+        }
+        // UI 정보(릴리즈 노트 등)를 갱신
+        await loadVersionInfo()
+      } else {
+        setCanDownload(false)
+      }
+    } catch (error) {
+      setCanDownload(false)
+    } finally {
+    }
+  }
+
   useEffect(() => {
+    // 1. UI용 버전 정보 로드
     loadVersionInfo()
+    performUpdateCheck()
 
     // electron-updater 이벤트 리스너 등록
     const unsubUpdateAvailable = window.api.version.onUpdateAvailable((info) => {
       console.log('업데이트 사용 가능:', info)
-      toast.success(`새로운 버전 ${info.version}이 있습니다!`)
+      // 토스트 메시지는 performUpdateCheck에서 처리하므로 여기서 제거합니다.
     })
 
     const unsubUpdateNotAvailable = window.api.version.onUpdateNotAvailable(() => {
@@ -58,10 +84,17 @@ export default function VersionPage() {
     })
 
     const unsubUpdateError = window.api.version.onUpdateError((error) => {
+      // 에러 발생 시 모든 로딩 상태 해제
       setDownloading(false)
       setChecking(false)
       setUpdating(false)
-      toast.error(`업데이트 오류: ${error}`)
+
+      // [개선] Please check update first 오류에 대한 토스트 메시지 개선
+      if (error.includes('check update first')) {
+        toast.error('업데이트 정보를 확인하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      } else {
+        toast.error(`업데이트 오류: ${error}`)
+      }
     })
 
     // cleanup
@@ -74,53 +107,15 @@ export default function VersionPage() {
     }
   }, [])
 
-  // 업데이트 확인 (electron-updater)
-  const handleCheckUpdate = async () => {
-    setChecking(true)
-    try {
-      const result = await window.api.version.checkForUpdates()
-      if (result.success) {
-        if (result.updateAvailable) {
-          toast.success('업데이트가 있습니다!')
-        } else {
-          toast.success('최신 버전입니다.')
-        }
-        await loadVersionInfo()
-      } else {
-        toast.error(result.error || '업데이트 확인 실패')
-      }
-    } catch (error) {
-      toast.error('업데이트 확인 중 오류가 발생했습니다.')
-    } finally {
-      setChecking(false)
-    }
-  }
-
-  // 업데이트 다운로드 (electron-updater)
+  // [수정] 업데이트 다운로드 (electron-updater)
   const handleUpdate = async () => {
-    // latestVersion이 없으면 먼저 업데이트 확인
-    if (!versionInfo?.latestVersion) {
-      toast.info('업데이트를 확인하는 중...')
-      setChecking(true)
-      try {
-        const checkResult = await window.api.version.checkForUpdates()
-        setChecking(false)
+    // 이미 자동 확인을 했지만, 혹시나 정보가 부족할 경우를 대비한 안전 장치 및 UI 피드백
+    if (!versionInfo?.latestVersion || !canDownload) {
+      toast.info('업데이트 정보를 다시 확인합니다...')
+      await performUpdateCheck()
 
-        if (!checkResult.success) {
-          toast.error(checkResult.error || '업데이트 확인 실패')
-          return
-        }
-        if (!checkResult.updateAvailable) {
-          toast.success('최신 버전입니다.')
-          return
-        }
-
-        // 업데이트가 있으면 versionInfo를 갱신하고 바로 다운로드 시작
-        await loadVersionInfo()
-        // 다운로드 계속 진행 (아래 로직으로)
-      } catch (error) {
-        toast.error('업데이트 확인 중 오류가 발생했습니다.')
-        setChecking(false)
+      if (!canDownload) {
+        toast.error('다운로드할 업데이트 정보를 찾을 수 없습니다. 다시 시도해주세요.')
         return
       }
     }
@@ -133,12 +128,13 @@ export default function VersionPage() {
     try {
       const result = await window.api.version.downloadUpdate()
       if (!result.success) {
-        toast.error(result.error || '업데이트 다운로드 실패')
+        // [중요] 중복 토스트 방지: 에러 토스트는 onUpdateError 리스너에 맡깁니다.
+        console.error('다운로드 요청 실패:', result.error)
         setDownloading(false)
       }
-      // 다운로드 진행은 이벤트 리스너에서 처리
     } catch (error) {
-      toast.error('업데이트 다운로드 중 오류가 발생했습니다.')
+      // [중요] 중복 토스트 방지: 에러 토스트는 onUpdateError 리스너에 맡깁니다.
+      console.error('업데이트 다운로드 중 오류가 발생했습니다:', error)
       setDownloading(false)
     } finally {
       setUpdating(false)
@@ -185,12 +181,6 @@ export default function VersionPage() {
         itemMatch = trimmed.match(/^\d+\.\s+(.+)/)
       }
 
-      if (itemMatch) {
-        let item = itemMatch[1]
-        // 이모지 제거 (선택사항)
-        item = item.replace(/^[✅❌⚡🔧🛡️📦🎨🏗️]+\s*/, '')
-        currentItems.push(item)
-      }
       // 일반 텍스트 (카테고리가 아니고 리스트도 아닌 경우)
       else if (trimmed.length > 0 && !trimmed.match(/^[#-]/)) {
         currentItems.push(trimmed)
@@ -238,16 +228,15 @@ export default function VersionPage() {
     )
   }
 
+  // 다운로드 버튼 활성화/비활성화 조건
+  const isUpdateActionDisabled = updating || downloading || checking || !canDownload
+
   return (
     <div className="px-4">
       {(checking || (updating && !downloading)) && <Loading fullScreen message={checking ? '확인 중...' : '처리 중...'} />}
 
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-2xl font-bold text-foreground">버전 정보</h2>
-        <Button variant="outline" size="sm" onClick={handleCheckUpdate} disabled={checking}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${checking ? 'animate-spin' : ''}`} />
-          {checking ? '확인 중...' : '업데이트 확인'}
-        </Button>
       </div>
 
       {/* 현재 버전 카드 */}
@@ -258,7 +247,7 @@ export default function VersionPage() {
             <p className="text-3xl font-bold text-foreground">v{versionInfo.currentVersion}</p>
           </div>
           <div className="flex items-center gap-3">
-            {versionInfo.isLatest ? (
+            {versionInfo.isLatest && !canDownload ? (
               <div className="flex items-center gap-2 text-primary">
                 <CheckCircle className="w-5 h-5" />
                 <span className="text-sm font-medium">최신 버전입니다</span>
@@ -276,9 +265,9 @@ export default function VersionPage() {
                       재시작 및 설치
                     </Button>
                   ) : (
-                    <Button onClick={handleUpdate} disabled={updating || downloading}>
+                    <Button onClick={handleUpdate} disabled={isUpdateActionDisabled}>
                       <Download className="w-4 h-4 mr-2" />
-                      {downloading ? '다운로드 중...' : '업데이트'}
+                      {downloading ? '다운로드 중...' : canDownload ? '업데이트' : '확인 중...'}
                     </Button>
                   )}
                 </div>
