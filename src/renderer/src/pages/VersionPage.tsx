@@ -181,6 +181,13 @@ export default function VersionPage() {
         itemMatch = trimmed.match(/^\d+\.\s+(.+)/)
       }
 
+      if (itemMatch) {
+        let item = itemMatch[1]
+        // 이모지 제거 (선택사항)
+        item = item.replace(/^[✅❌⚡🔧🛡️📦🎨🏗️]+\s*/, '')
+        currentItems.push(item)
+      }
+
       // 일반 텍스트 (카테고리가 아니고 리스트도 아닌 경우)
       else if (trimmed.length > 0 && !trimmed.match(/^[#-]/)) {
         currentItems.push(trimmed)
