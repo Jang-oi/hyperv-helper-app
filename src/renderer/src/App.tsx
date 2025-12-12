@@ -8,6 +8,7 @@ import IPChangePage from './pages/IPChangePage'
 import NotepadPage from './pages/NotepadPage'
 import OTPPage from './pages/OTPPage'
 import PortProxyPage from './pages/PortProxyPage'
+import SystemSettingsPage from './pages/SystemSettingsPage'
 import VersionPage from './pages/VersionPage'
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
         return <OTPPage />
       case 'notepad':
         return <NotepadPage />
+      case 'system-settings':
+        return <SystemSettingsPage />
       case 'version':
         return <VersionPage />
       default:

@@ -40,7 +40,9 @@ const api = {
     applyRules: (rules: any[]) => ipcRenderer.invoke('portproxy:applyRules', rules)
   },
   system: {
-    restart: () => ipcRenderer.invoke('system:restart')
+    restart: () => ipcRenderer.invoke('system:restart'),
+    getShutdownSchedule: () => ipcRenderer.invoke('system:getShutdownSchedule'),
+    setShutdownSchedule: (schedule: any) => ipcRenderer.invoke('system:setShutdownSchedule', schedule)
   },
   // 💡 Version API 추가
   version: {

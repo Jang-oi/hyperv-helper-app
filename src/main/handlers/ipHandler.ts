@@ -28,9 +28,7 @@ function parseIpconfigAll(output: string): ParsedAdapter[] {
 
     // 어댑터 시작 감지 (영문/한글 모두 지원)
     // "이더넷 어댑터", "무선 LAN 어댑터", "Ethernet adapter", "Wireless LAN adapter" 등
-    const adapterMatch = line.match(
-      /^(?:이더넷|무선 LAN|Ethernet|Wireless LAN)\s*(?:어댑터|adapter)\s+(.+):/i
-    )
+    const adapterMatch = line.match(/^(?:이더넷|무선 LAN|Ethernet|Wireless LAN)\s*(?:어댑터|adapter)\s+(.+):/i)
     if (adapterMatch) {
       if (currentAdapter && currentAdapter.ipv4) {
         adapters.push(currentAdapter)

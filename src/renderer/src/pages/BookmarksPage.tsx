@@ -53,8 +53,6 @@ export default function BookmarksPage() {
 
       if (hasError) {
         toast.error('일부 북마크 스테이지를 로드하는 데 실패했습니다.')
-      } else {
-        console.log('북마크 로드 완료')
       }
     } catch (e) {
       toast.error('IPC 통신 오류: 북마크 데이터를 가져올 수 없습니다.')

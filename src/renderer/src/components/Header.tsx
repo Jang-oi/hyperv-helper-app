@@ -28,6 +28,10 @@ const menuItems: MenuItem[] = [
     id: 'notepad'
   },
   {
+    label: '시스템 설정',
+    id: 'system-settings'
+  },
+  {
     label: '버전 조회',
     id: 'version'
   }

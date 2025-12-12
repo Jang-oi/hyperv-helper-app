@@ -1,7 +1,5 @@
 import { exec, ExecOptions } from 'child_process'
-import { promisify } from 'util'
-
-const execAsync = promisify(exec)
+import iconv from 'iconv-lite'
 
 /**
  * Command execution result
@@ -17,7 +15,7 @@ export interface CommandResult {
  */
 
 /**
- * 명령어 실행 (chcp 65001 UTF-8 인코딩 자동 적용)
+ * 명령어 실행 (CP949 인코딩 처리)
  * @param command 실행할 명령어 (netsh, powershell 등 모든 cmd 명령어)
  * @param options execAsync 옵션 (선택사항)
  * @returns CommandResult
@@ -30,17 +28,31 @@ export interface CommandResult {
  * await execCommand('powershell -Command "Get-NetIPAddress"')
  */
 export async function execCommand(command: string, options?: ExecOptions): Promise<CommandResult> {
-  // chcp 65001로 UTF-8 인코딩 설정 후 명령어 실행
-  const wrappedCommand = `chcp 65001 >nul && ${command}`
-
-  const result = await execAsync(wrappedCommand, {
-    encoding: 'utf8',
-    ...options
+  return new Promise((resolve, reject) => {
+    exec(command, { encoding: 'buffer', ...options }, (err, stdout, stderr) => {
+      if (err) {
+        reject({
+          stdout: '',
+          stderr: iconv.decode(stderr as Buffer, 'cp949')
+        })
+      } else {
+        resolve({
+          stdout: iconv.decode(stdout as Buffer, 'cp949'),
+          stderr: iconv.decode(stderr as Buffer, 'cp949')
+        })
+      }
+    })
   })
+}
 
-  // encoding: 'utf8'을 지정했으므로 stdout과 stderr는 항상 string입니다
-  return {
-    stdout: result.stdout as string,
-    stderr: result.stderr as string
-  }
+export const execPromise = (command) => {
+  return new Promise((resolve, reject) => {
+    exec(command, { encoding: 'buffer' }, (err, stdout, stderr) => {
+      if (err) {
+        reject(iconv.decode(stderr, 'cp949'))
+      } else {
+        resolve(iconv.decode(stdout, 'cp949'))
+      }
+    })
+  })
 }

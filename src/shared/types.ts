@@ -86,3 +86,18 @@ export interface VersionResult {
   error?: string
   versionInfo?: VersionInfo
 }
+
+// ==================== System 관련 타입 ====================
+export interface ShutdownSchedule {
+  enabled: boolean
+  hour: number
+  minute: number
+  second: number
+}
+
+export interface SystemResult {
+  success: boolean
+  error?: string
+  message?: string
+  schedule?: ShutdownSchedule
+}

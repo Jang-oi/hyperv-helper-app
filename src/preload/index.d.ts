@@ -85,8 +85,24 @@ interface IPAPI {
   setConfig: (adapterName: string, config: any) => Promise<IPResult>
 }
 
+interface ShutdownSchedule {
+  enabled: boolean
+  hour: number
+  minute: number
+  second: number
+}
+
+interface SystemResult {
+  success: boolean
+  error?: string
+  message?: string
+  schedule?: ShutdownSchedule
+}
+
 interface SystemAPI {
   restart: () => Promise<HostnameResult>
+  getShutdownSchedule: () => Promise<SystemResult>
+  setShutdownSchedule: (schedule: ShutdownSchedule) => Promise<SystemResult>
 }
 
 // 💡 Version 관련 타입
